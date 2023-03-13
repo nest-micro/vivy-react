@@ -1,4 +1,6 @@
 {
+  "name": "vivy-react",
+  "version": "0.0.1",
   "private": true,
   "author": "haiweilian <haiweilian@foxmail.com>",
   "scripts": {
