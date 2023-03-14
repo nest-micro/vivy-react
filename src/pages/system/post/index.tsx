@@ -1,11 +1,11 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-const Home: React.FC = () => {
+const Post: React.FC = () => {
   return (
     <PageContainer ghost>
-      <div>Home</div>
+      <div>Post</div>
     </PageContainer>
   );
 };
 
-export default Home;
+export default Post;
