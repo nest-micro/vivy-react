@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-const Menu: React.FC = () => {
+const Menu = () => {
   return (
     <PageContainer ghost>
       <div>Menu</div>

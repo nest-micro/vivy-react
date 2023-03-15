@@ -1,9 +1,14 @@
-import { RunTimeLayoutConfig } from '@umijs/max';
-import type { Settings as LayoutSettings } from '@ant-design/pro-components';
+import { history } from '@umijs/max';
+import type { RunTimeLayoutConfig, RequestConfig } from '@umijs/max';
 import { SettingDrawer } from '@ant-design/pro-components';
+import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { QuestionCircleOutlined, GithubOutlined } from '@ant-design/icons';
+import { message as Message, notification as Notification, Modal } from 'antd';
 import defaultSettings from '../config/setting';
-import { Footer, AvatarName, AvatarDropdown } from '@/components/Layout';
+import { AvatarName, AvatarDropdown } from '@/components/Layout';
+import { getToken, removeToken } from '@/utils/auth';
+import { PageEnum } from '@/enums/pageEnum';
+import services from './services';
 
 /**
  * @name InitialState 全局初始化数据配置用于 Layout 用户信息和权限初始化
@@ -11,7 +16,28 @@ import { Footer, AvatarName, AvatarDropdown } from '@/components/Layout';
  */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
+  token?: string;
+  userInfo?: API.UserInfo;
 }> {
+  const token = getToken();
+  const location = history.location;
+  if (token && location.pathname !== PageEnum.BASE_LOGIN) {
+    try {
+      const userInfo = await services.UserController.getInfo();
+      return {
+        token,
+        userInfo,
+        settings: defaultSettings as Partial<LayoutSettings>,
+      };
+    } catch (error) {
+      removeToken();
+      history.push(PageEnum.BASE_LOGIN);
+    }
+  } else {
+    removeToken();
+    history.push(PageEnum.BASE_LOGIN);
+  }
+
   return {
     settings: defaultSettings as Partial<LayoutSettings>,
   };
@@ -21,48 +47,20 @@ export async function getInitialState(): Promise<{
  * @name ProLayout 运行时布局配置
  * @doc https://procomponents.ant.design/components/layout#prolayout
  */
-export const layout: RunTimeLayoutConfig = ({
-  initialState,
-  setInitialState,
-}) => {
+export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+  const user = initialState?.userInfo?.user || ({} as API.UserInfo['user']);
+
   return {
     avatarProps: {
       src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-      title: <AvatarName />,
+      title: <AvatarName name={user.nickName} />,
       render: (_, children) => {
         return <AvatarDropdown>{children}</AvatarDropdown>;
       },
     },
-    waterMarkProps: {
-      content: initialState?.settings?.title as string,
-    },
-    appList: [
-      {
-        icon: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
-        title: 'Ant Design',
-        desc: '杭州市较知名的 UI 设计语言',
-        url: 'https://ant.design',
-      },
-      {
-        icon: 'https://gw.alipayobjects.com/zos/antfincdn/FLrTNDvlna/antv.png',
-        title: 'AntV',
-        desc: '蚂蚁集团全新一代数据可视化解决方案',
-        url: 'https://antv.vision/',
-        target: '_blank',
-      },
-      {
-        icon: 'https://gw.alipayobjects.com/zos/antfincdn/upvrAjAPQX/Logo_Tech%252520UI.svg',
-        title: 'Pro Components',
-        desc: '专业级 UI 组件库',
-        url: 'https://procomponents.ant.design/',
-      },
-      {
-        icon: 'https://img.alicdn.com/tfs/TB1zomHwxv1gK0jSZFFXXb0sXXa-200-200.png',
-        title: 'umi',
-        desc: '插件化的企业级前端应用框架。',
-        url: 'https://umijs.org/zh-CN/docs',
-      },
-    ],
+    // waterMarkProps: {
+    //   content: initialState?.settings?.title as string,
+    // },
     bgLayoutImgList: [
       {
         src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr',
@@ -84,14 +82,11 @@ export const layout: RunTimeLayoutConfig = ({
       },
     ],
     actionsRender: () => {
-      return [
-        <QuestionCircleOutlined key="doc" />,
-        <GithubOutlined key="github" />,
-      ];
+      return [<QuestionCircleOutlined key="doc" />, <GithubOutlined key="github" />];
     },
-    footerRender: () => {
-      return <Footer />;
-    },
+    // footerRender: () => {
+    //   return <Footer />;
+    // },
     childrenRender: (children) => {
       return (
         <>
@@ -110,9 +105,83 @@ export const layout: RunTimeLayoutConfig = ({
         </>
       );
     },
-    onPageChange: (location) => {
-      console.log('onPageChange', location);
-    },
+    // onPageChange: (location) => {
+    //   console.log('onPageChange', location);
+    // },
     ...initialState?.settings,
   };
+};
+
+/**
+ * @name Request 运行时布局配置
+ * @doc https://umijs.org/docs/max/request
+ */
+export const request: RequestConfig = {
+  timeout: 1000 * 60,
+  requestInterceptors: [
+    [
+      (config: any) => {
+        const token = getToken();
+        const isToken = config.isToken === false;
+        if (token && !isToken) {
+          config.headers['Authorization'] = 'Bearer ' + token;
+        }
+        return config;
+      },
+      (error: any) => {
+        return Promise.reject(error);
+      },
+    ],
+  ],
+  responseInterceptors: [
+    [
+      (response: any) => {
+        const code = response.data.code || 200;
+        const message = response.data.msg || '系统未知错误，请反馈给管理员';
+        const skipErrorHandler = response.config.skipErrorHandler;
+
+        if (skipErrorHandler) {
+          if (code !== 200) {
+            return Promise.reject(message);
+          }
+        } else if (code === 401) {
+          Modal.confirm({
+            title: '系统提示',
+            content: '登录状态已过期，您可以继续留在该页面，或者重新登录',
+            cancelText: '取消',
+            okText: '重新登录',
+            onOk() {
+              history.push(PageEnum.BASE_LOGIN);
+            },
+          });
+          return Promise.reject('无效的会话，或者会话已过期，请重新登录。');
+        } else if (code === 500) {
+          Message.error(message);
+          return Promise.reject(message);
+        } else if (code === 601) {
+          Message.warning(message);
+          return Promise.reject(message);
+        } else if (code !== 200) {
+          Notification.error({ message });
+          return Promise.reject(message);
+        }
+
+        return response;
+      },
+      (error: any) => {
+        let { message } = error;
+
+        if (message === 'Network Error') {
+          message = '后端接口连接异常';
+        } else if (message.includes('timeout')) {
+          message = '系统接口请求超时';
+        } else if (message.includes('Request failed with status code')) {
+          message = '系统接口' + message.substr(message.length - 3) + '异常';
+        }
+
+        Message.error(message);
+        return Promise.reject(error);
+      },
+    ],
+  ],
 };

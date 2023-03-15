@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-const LoginLog: React.FC = () => {
+const LoginLog = () => {
   return (
     <PageContainer ghost>
       <div>LoginLog</div>

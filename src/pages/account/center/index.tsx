@@ -1,11 +1,11 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-const OperationLog = () => {
+const Center = () => {
   return (
     <PageContainer ghost>
-      <div>OperationLog</div>
+      <div>Center</div>
     </PageContainer>
   );
 };
 
-export default OperationLog;
+export default Center;

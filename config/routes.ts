@@ -14,6 +14,25 @@ const routes = [
     icon: 'HomeOutlined',
   },
   {
+    name: '登录',
+    path: '/login',
+    component: './login',
+    layout: false,
+    hideInMenu: true,
+  },
+  {
+    name: '账号管理',
+    path: '/account',
+    hideInMenu: true,
+    routes: [
+      {
+        name: '个人中心',
+        path: 'center',
+        component: './account/center',
+      },
+    ],
+  },
+  {
     name: '系统管理',
     path: '/system',
     icon: 'SettingOutlined',
@@ -65,13 +84,6 @@ const routes = [
         ],
       },
     ],
-  },
-  {
-    name: '登录',
-    path: '/login',
-    component: './login',
-    layout: false,
-    hideInMenu: true,
   },
   {
     path: '*',

@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-const Post: React.FC = () => {
+const Post = () => {
   return (
     <PageContainer ghost>
       <div>Post</div>

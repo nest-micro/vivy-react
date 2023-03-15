@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-const Dict: React.FC = () => {
+const Dict = () => {
   return (
     <PageContainer ghost>
       <div>Dict</div>

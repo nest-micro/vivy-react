@@ -1,10 +1,15 @@
-import { PageContainer } from '@ant-design/pro-components';
+import { Tree } from 'antd';
+import type { TreeProps } from 'antd/es/tree';
 
-const User: React.FC = () => {
+const User = () => {
+  const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
+    console.log('selected', selectedKeys, info);
+  };
+
   return (
-    <PageContainer ghost>
-      <div>User</div>
-    </PageContainer>
+    <div className="flex h-full">
+      <Tree className="w-1/4 ant-tree-scroll" defaultExpandAll onSelect={onSelect} treeData={[]} />
+    </div>
   );
 };
 

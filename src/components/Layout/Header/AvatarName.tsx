@@ -1,7 +1,7 @@
 import React from 'react';
 
-const AvatarName: React.FC = () => {
-  return <span className="anticon">七妮妮</span>;
+const AvatarName: React.FC<{ name: string }> = ({ name }) => {
+  return <span className="anticon">{name}</span>;
 };
 
 export default AvatarName;

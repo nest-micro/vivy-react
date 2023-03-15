@@ -1,4 +1,5 @@
 import { defineConfig } from '@umijs/max';
+import proxy from './proxy';
 import routes from './routes';
 import defaultSettings from './setting';
 
@@ -16,6 +17,14 @@ export default defineConfig({
    * @doc https://umijs.org/docs/guides/routes
    */
   routes,
+  /**
+   * @name 代理配置
+   * @description 可以让你的本地服务器代理到你的服务器上，这样你就可以访问服务器的数据了
+   * @see 要注意以下 代理只能在本地开发时使用，build 之后就无法使用了。
+   * @doc 代理介绍 https://umijs.org/docs/guides/proxy
+   * @doc 代理配置 https://umijs.org/docs/api/config#proxy
+   */
+  proxy,
   /**
    * @name antd 插件
    * @description 内置了 babel import 插件
@@ -44,7 +53,9 @@ export default defineConfig({
    * @description 它基于 axios 和 ahooks 的 useRequest 提供了一套统一的网络请求和错误处理方案。
    * @doc https://umijs.org/docs/max/request
    */
-  request: {},
+  request: {
+    dataField: '',
+  },
   /**
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
@@ -53,4 +64,9 @@ export default defineConfig({
     locale: false,
     ...defaultSettings,
   },
+  /**
+   * @name tailwindcss 插件
+   * @doc https://umijs.org/docs/guides/generator#tailwind-css-%E9%85%8D%E7%BD%AE%E7%94%9F%E6%88%90%E5%99%A8
+   */
+  tailwindcss: {},
 });
