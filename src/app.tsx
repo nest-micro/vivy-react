@@ -143,6 +143,7 @@ export const request: RequestConfig = {
         const message = response.data.msg || '系统未知错误，请反馈给管理员';
         const skipErrorHandler = response.config.skipErrorHandler;
 
+        // 错误判断
         if (skipErrorHandler) {
           if (code !== 200) {
             return Promise.reject(message);
@@ -167,6 +168,11 @@ export const request: RequestConfig = {
         } else if (code !== 200) {
           Notification.error({ message });
           return Promise.reject(message);
+        }
+
+        // 转换数据
+        if (response.data.rows) {
+          response.data.data = response.data.rows;
         }
 
         return response;
