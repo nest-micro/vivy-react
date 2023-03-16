@@ -35,7 +35,9 @@ export async function getInitialState(): Promise<{
     }
   } else {
     removeToken();
-    history.push(PageEnum.BASE_LOGIN);
+    if (location.pathname !== PageEnum.BASE_LOGIN) {
+      history.push(PageEnum.BASE_LOGIN);
+    }
   }
 
   return {
@@ -126,6 +128,7 @@ export const request: RequestConfig = {
         if (token && !isToken) {
           config.headers['Authorization'] = 'Bearer ' + token;
         }
+        config.url = `/api${config.url}`;
         return config;
       },
       (error: any) => {

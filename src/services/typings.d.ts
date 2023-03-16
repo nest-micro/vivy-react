@@ -15,6 +15,10 @@ declare namespace API {
       avatar: string;
       deptId: string;
       deptName: string;
+      sex: string;
+      createTime: string;
+      dept: API.Indexable;
+      roles: API.Indexable[];
     };
   }
 }

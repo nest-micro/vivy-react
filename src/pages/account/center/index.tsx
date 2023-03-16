@@ -1,10 +1,42 @@
-import { PageContainer } from '@ant-design/pro-components';
+import { Row, Col, Card, Tabs } from 'antd';
+import { useRequest } from '@umijs/max';
+import UserInfo from './components/UserInfo';
+import UpdateInfo from './components/UpdateInfo';
+import UpdatePassword from './components/UpdatePassword';
+import services from '@/services';
 
 const Center = () => {
+  const { data, loading } = useRequest(services.UserController.getUserProfile, {
+    initialData: { data: {} },
+  });
+
   return (
-    <PageContainer ghost>
-      <div>Center</div>
-    </PageContainer>
+    <Row>
+      <Col span={8}>
+        <Card title="基本信息" bodyStyle={{ paddingTop: '0px' }} loading={loading}>
+          <UserInfo user={data.data} />
+        </Card>
+      </Col>
+      <Col span={15} className="ml-4">
+        <Card title="基本资料" bodyStyle={{ paddingTop: '0px' }} loading={loading}>
+          <Tabs
+            defaultActiveKey="info"
+            items={[
+              {
+                key: 'info',
+                label: '基本资料',
+                children: <UpdateInfo user={data.data} />,
+              },
+              {
+                key: 'password',
+                label: '修改密码',
+                children: <UpdatePassword />,
+              },
+            ]}
+          />
+        </Card>
+      </Col>
+    </Row>
   );
 };
 
