@@ -1,14 +1,12 @@
 import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import type { ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import services from '@/services';
 
 const LoginLog = () => {
-  const actionRef = useRef<ActionType>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
   const columns: ProColumns<API.Indexable>[] = [
     {
       title: '访问编号',
@@ -50,7 +48,6 @@ const LoginLog = () => {
       headerTitle="登录日志"
       bordered
       columns={columns}
-      actionRef={actionRef}
       rowSelection={{
         selectedRowKeys,
         onChange: setSelectedRowKeys,
@@ -64,7 +61,7 @@ const LoginLog = () => {
       }}
       toolbar={{
         actions: [
-          <Popconfirm key="button" title="是否确认删除？" disabled={!selectedRowKeys.length}>
+          <Popconfirm key="delete" title="是否确认删除？" disabled={!selectedRowKeys.length}>
             <Button
               icon={<DeleteOutlined />}
               type="primary"
@@ -74,12 +71,12 @@ const LoginLog = () => {
               删除
             </Button>
           </Popconfirm>,
-          <Popconfirm key="button" title="是否确认清空？">
+          <Popconfirm key="clean" title="是否确认清空？">
             <Button icon={<DeleteOutlined />} type="primary" danger>
               清空
             </Button>
           </Popconfirm>,
-          <Button key="button" icon={<DownloadOutlined />}>
+          <Button key="download" icon={<DownloadOutlined />}>
             导出
           </Button>,
         ],

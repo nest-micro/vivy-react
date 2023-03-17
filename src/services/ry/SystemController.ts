@@ -1,5 +1,6 @@
 import { request } from '@umijs/max';
 import { RequestEnum } from '@/enums/httpEnum';
+import { listToTree } from '@/utils/tree';
 
 // 查询用户列表
 export function listUser(params: API.Indexable) {
@@ -36,6 +37,13 @@ export function listMenu(params: API.Indexable) {
   return request('/system/menu/list', {
     method: RequestEnum.GET,
     params,
+  }).then((res) => {
+    res.data = listToTree(res.data, {
+      id: 'menuId',
+      pid: 'parentId',
+      children: 'children',
+    });
+    return res;
   });
 }
 
@@ -51,6 +59,13 @@ export function listDept(params: API.Indexable) {
   return request('/system/dept/list', {
     method: RequestEnum.GET,
     params,
+  }).then((res) => {
+    res.data = listToTree(res.data, {
+      id: 'deptId',
+      pid: 'parentId',
+      children: 'children',
+    });
+    return res;
   });
 }
 

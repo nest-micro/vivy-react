@@ -1,12 +1,11 @@
 import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import type { ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm, Drawer, Descriptions } from 'antd';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import services from '@/services';
 
 const OperationLog = () => {
-  const actionRef = useRef<ActionType>();
   const [open, setOpen] = useState(false);
   const [openData, setDataOpen] = useState<API.Indexable>({});
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -45,15 +44,16 @@ const OperationLog = () => {
       valueType: 'option',
       key: 'option',
       render: (_, record) => [
-        <a
+        <Button
           key="detail"
+          type="link"
           onClick={() => {
             setOpen(true);
             setDataOpen(record);
           }}
         >
           详情
-        </a>,
+        </Button>,
       ],
     },
   ];
@@ -65,7 +65,6 @@ const OperationLog = () => {
         headerTitle="操作日志"
         bordered
         columns={columns}
-        actionRef={actionRef}
         rowSelection={{
           selectedRowKeys,
           onChange: setSelectedRowKeys,
@@ -79,7 +78,7 @@ const OperationLog = () => {
         }}
         toolbar={{
           actions: [
-            <Popconfirm key="button" title="是否确认删除？" disabled={!selectedRowKeys.length}>
+            <Popconfirm key="delete" title="是否确认删除？" disabled={!selectedRowKeys.length}>
               <Button
                 icon={<DeleteOutlined />}
                 type="primary"
@@ -89,18 +88,18 @@ const OperationLog = () => {
                 删除
               </Button>
             </Popconfirm>,
-            <Popconfirm key="button" title="是否确认清空？">
+            <Popconfirm key="clean" title="是否确认清空？">
               <Button icon={<DeleteOutlined />} type="primary" danger>
                 清空
               </Button>
             </Popconfirm>,
-            <Button key="button" icon={<DownloadOutlined />}>
+            <Button key="download" icon={<DownloadOutlined />}>
               导出
             </Button>,
           ],
         }}
       />
-      <Drawer title="操作日志详情" width={700} open={open} onClose={() => setOpen(false)}>
+      <Drawer title="操作日志详情" width={1000} open={open} onClose={() => setOpen(false)}>
         <Descriptions column={2}>
           <Descriptions.Item label="操作模块">
             {openData.title} / {openData.businessType}
