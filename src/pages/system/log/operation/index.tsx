@@ -3,6 +3,7 @@ import type { ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm, Drawer, Descriptions } from 'antd';
 import React, { useState } from 'react';
+import { DictTag, DictText } from '@/components/Dict';
 import services from '@/services';
 
 const OperationLog = () => {
@@ -22,6 +23,9 @@ const OperationLog = () => {
     {
       title: '操作类型',
       dataIndex: 'businessType',
+      render: (_, record) => {
+        return <DictTag type={'sys_oper_type'} value={record.businessType} />;
+      },
     },
     {
       title: '请求方式',
@@ -34,6 +38,9 @@ const OperationLog = () => {
     {
       title: '操作状态',
       dataIndex: 'status',
+      render: (_, record) => {
+        return <DictTag type={'sys_common_status'} value={record.status} />;
+      },
     },
     {
       title: '操作日期',
@@ -102,7 +109,7 @@ const OperationLog = () => {
       <Drawer title="操作日志详情" width={1000} open={open} onClose={() => setOpen(false)}>
         <Descriptions column={2}>
           <Descriptions.Item label="操作模块">
-            {openData.title} / {openData.businessType}
+            {openData.title} / <DictText type={'sys_oper_type'} value={openData.businessType} />
           </Descriptions.Item>
           <Descriptions.Item label="登录信息">
             {openData.operName} / {openData.operIp} / {openData.operLocation}
@@ -118,7 +125,9 @@ const OperationLog = () => {
           <Descriptions.Item label="返回参数" span={2}>
             {openData.jsonResult}
           </Descriptions.Item>
-          <Descriptions.Item label="操作状态">{openData.status}</Descriptions.Item>
+          <Descriptions.Item label="操作状态">
+            <DictText type={'sys_common_status'} value={openData.status} />
+          </Descriptions.Item>
           <Descriptions.Item label="操作时间">{openData.operTime}</Descriptions.Item>
         </Descriptions>
       </Drawer>

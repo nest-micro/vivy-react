@@ -3,6 +3,7 @@ import type { ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
 import React, { useState } from 'react';
+import { DictTag } from '@/components/Dict';
 import services from '@/services';
 
 const LoginLog = () => {
@@ -35,6 +36,9 @@ const LoginLog = () => {
     {
       title: '登录状态',
       dataIndex: 'status',
+      render: (_, record) => {
+        return <DictTag type={'sys_common_status'} value={record.status} />;
+      },
     },
     {
       title: '登录日期',
