@@ -1,10 +1,20 @@
 import { PlusOutlined } from '@ant-design/icons';
-import type { ProColumns } from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
+import { useRef, useState } from 'react';
+import { DictTag } from '@/components/Dict';
+import UpdateForm from './components/UpdateForm';
 import services from '@/services';
 
 const Dept = () => {
+  const actionRef = useRef<ActionType>();
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [recordData, setRecordData] = useState<API.Indexable>({});
+
+  /**
+   * @description 表格配置
+   */
   const columns: ProColumns<API.Indexable>[] = [
     {
       title: '部门名称',
@@ -17,6 +27,9 @@ const Dept = () => {
     {
       title: '状态',
       dataIndex: 'status',
+      render: (_, record) => {
+        return <DictTag type={'sys_normal_disable'} value={record.status} />;
+      },
     },
     {
       title: '创建时间',
@@ -26,12 +39,26 @@ const Dept = () => {
       title: '操作',
       valueType: 'option',
       key: 'option',
-      render: () => [
-        <Button key="edit" type="link">
-          修改
-        </Button>,
-        <Button key="add" type="link">
+      render: (_, record) => [
+        <Button
+          key="add"
+          type="link"
+          onClick={() => {
+            setRecordData(record);
+            setUpdateOpen(true);
+          }}
+        >
           新增
+        </Button>,
+        <Button
+          key="edit"
+          type="link"
+          onClick={() => {
+            setRecordData(record);
+            setUpdateOpen(true);
+          }}
+        >
+          修改
         </Button>,
         <Popconfirm key="delete" title="是否确认删除？">
           <Button type="link" danger>
@@ -43,26 +70,43 @@ const Dept = () => {
   ];
 
   return (
-    <ProTable
-      rowKey="deptId"
-      headerTitle="部门列表"
-      bordered
-      columns={columns}
-      request={async (params, sort, filter) => {
-        console.log(params, sort, filter);
-        return services.SystemController.listDept({
-          ...params,
-          pageNum: params.current,
-        });
-      }}
-      toolbar={{
-        actions: [
-          <Button key="add" type="primary" icon={<PlusOutlined />}>
-            新增
-          </Button>,
-        ],
-      }}
-    />
+    <>
+      <ProTable
+        rowKey="deptId"
+        headerTitle="部门列表"
+        bordered
+        columns={columns}
+        actionRef={actionRef}
+        request={async (params, sort, filter) => {
+          console.log(params, sort, filter);
+          return services.SystemController.listDept({
+            ...params,
+            pageNum: params.current,
+          });
+        }}
+        toolbar={{
+          actions: [
+            <Button
+              key="add"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setRecordData({});
+                setUpdateOpen(true);
+              }}
+            >
+              新增
+            </Button>,
+          ],
+        }}
+      />
+      <UpdateForm
+        record={recordData}
+        open={updateOpen}
+        onOpenChange={setUpdateOpen}
+        onFinish={async () => actionRef.current?.reload()}
+      />
+    </>
   );
 };
 

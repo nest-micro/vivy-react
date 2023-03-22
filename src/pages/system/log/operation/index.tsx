@@ -8,9 +8,12 @@ import services from '@/services';
 
 const OperationLog = () => {
   const [open, setOpen] = useState(false);
-  const [openData, setDataOpen] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<API.Indexable>({});
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
+  /**
+   * @description 表格配置
+   */
   const columns: ProColumns<API.Indexable>[] = [
     {
       title: '日志编号',
@@ -56,7 +59,7 @@ const OperationLog = () => {
           type="link"
           onClick={() => {
             setOpen(true);
-            setDataOpen(record);
+            setRecordData(record);
           }}
         >
           详情
@@ -109,26 +112,26 @@ const OperationLog = () => {
       <Drawer title="操作日志详情" width={1000} open={open} onClose={() => setOpen(false)}>
         <Descriptions column={2}>
           <Descriptions.Item label="操作模块">
-            {openData.title} / <DictText type={'sys_oper_type'} value={openData.businessType} />
+            {recordData.title} / <DictText type={'sys_oper_type'} value={recordData.businessType} />
           </Descriptions.Item>
           <Descriptions.Item label="登录信息">
-            {openData.operName} / {openData.operIp} / {openData.operLocation}
+            {recordData.operName} / {recordData.operIp} / {recordData.operLocation}
           </Descriptions.Item>
-          <Descriptions.Item label="请求方式">{openData.requestMethod}</Descriptions.Item>
-          <Descriptions.Item label="请求地址">{openData.operUrl}</Descriptions.Item>
+          <Descriptions.Item label="请求方式">{recordData.requestMethod}</Descriptions.Item>
+          <Descriptions.Item label="请求地址">{recordData.operUrl}</Descriptions.Item>
           <Descriptions.Item label="操作方法" span={2}>
-            {openData.method}
+            {recordData.method}
           </Descriptions.Item>
           <Descriptions.Item label="请求参数" span={2}>
-            {openData.operParam}
+            {recordData.operParam}
           </Descriptions.Item>
           <Descriptions.Item label="返回参数" span={2}>
-            {openData.jsonResult}
+            {recordData.jsonResult}
           </Descriptions.Item>
           <Descriptions.Item label="操作状态">
-            <DictText type={'sys_common_status'} value={openData.status} />
+            <DictText type={'sys_common_status'} value={recordData.status} />
           </Descriptions.Item>
-          <Descriptions.Item label="操作时间">{openData.operTime}</Descriptions.Item>
+          <Descriptions.Item label="操作时间">{recordData.operTime}</Descriptions.Item>
         </Descriptions>
       </Drawer>
     </>

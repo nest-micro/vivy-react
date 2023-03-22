@@ -1,6 +1,6 @@
 import { request } from '@umijs/max';
 import { RequestEnum } from '@/enums/httpEnum';
-import { listToTree } from '@/utils/tree';
+import { eachTree, listToTree } from '@/utils/tree';
 
 // 查询用户列表
 export function listUser(params: API.Indexable) {
@@ -11,7 +11,7 @@ export function listUser(params: API.Indexable) {
 }
 
 // 查询用户详细
-export function getUser(userId: string) {
+export function getUser(userId: string = '') {
   return request('/system/user/' + userId, {
     method: RequestEnum.GET,
   });
@@ -43,6 +43,11 @@ export function listMenu(params: API.Indexable) {
       pid: 'parentId',
       children: 'children',
     });
+    eachTree(res.data, (node) => {
+      if (node.children.length === 0) {
+        node.children = undefined;
+      }
+    });
     return res;
   });
 }
@@ -64,6 +69,11 @@ export function listDept(params: API.Indexable) {
       id: 'deptId',
       pid: 'parentId',
       children: 'children',
+    });
+    eachTree(res.data, (node) => {
+      if (node.children.length === 0) {
+        node.children = undefined;
+      }
     });
     return res;
   });
@@ -119,5 +129,20 @@ export function listLogininfor(params: API.Indexable) {
   return request('/monitor/logininfor/list', {
     method: RequestEnum.GET,
     params,
+  });
+}
+
+// 查询参数列表
+export function listConfig(params: API.Indexable) {
+  return request('/system/config/list', {
+    method: RequestEnum.GET,
+    params,
+  });
+}
+
+// 查询参数详细
+export function getConfig(configId: string) {
+  return request('/system/config/' + configId, {
+    method: RequestEnum.GET,
   });
 }

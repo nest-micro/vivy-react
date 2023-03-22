@@ -1,21 +1,22 @@
 import { useModel } from '@umijs/max';
 import { useEffect, useMemo } from 'react';
+import { DictType, DictKeys } from '@/models/dict';
 
 type DictProps = {
-  type: string;
-  value: number | number[] | string | string[];
+  type: DictType;
+  value: DictKeys;
   separator?: string;
 };
 
 const DictText: React.FC<DictProps> = ({ type, value, separator = ',' }) => {
-  const { dict, get, register } = useModel('dict');
+  const { dict, getDict, registerDict } = useModel('dict');
 
   useEffect(() => {
-    register([type]);
+    registerDict([type]);
   }, [type]);
 
   const data = useMemo(() => {
-    return get(type, value);
+    return getDict(type, value);
   }, [dict, type, value]);
 
   return <span>{data.map((d) => d.dictLabel).join(separator)}</span>;

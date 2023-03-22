@@ -21,4 +21,18 @@ declare namespace API {
       roles: API.Indexable[];
     };
   }
+
+  interface DictInfo {
+    label: string;
+    value: string;
+    cssClass: string;
+    dictCode: number;
+    dictLabel: string;
+    dictValue: string;
+    dictSort: number;
+    dictType: 'sys_normal_disable' | 'sys_common_status' | 'sys_yes_no' | 'sys_oper_type';
+    listClass: string;
+    remark: string;
+    status: string;
+  }
 }

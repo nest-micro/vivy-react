@@ -32,3 +32,12 @@ export function listToTree<T = any>(list: any[], config: Partial<TreeHelperConfi
 
   return result;
 }
+
+export function eachTree(treeDatas: any[], callback: (...args: any) => any, parentNode = {}) {
+  treeDatas.forEach((element) => {
+    const newNode = callback(element, parentNode) || element;
+    if (element.children) {
+      eachTree(element.children, callback, newNode);
+    }
+  });
+}

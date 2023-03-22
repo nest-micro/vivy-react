@@ -8,6 +8,10 @@ import services from '@/services';
 
 const LoginLog = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  /**
+   * @description 表格配置
+   */
   const columns: ProColumns<API.Indexable>[] = [
     {
       title: '访问编号',

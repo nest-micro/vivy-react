@@ -2,6 +2,7 @@ import { LockOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
 import { Space } from 'antd';
 import { useRequest, useModel, history } from '@umijs/max';
+import { Footer } from '@/components/Layout';
 import { setToken } from '@/utils/auth';
 import { PageEnum } from '@/enums/pageEnum';
 import styles from './index.less';
@@ -23,7 +24,9 @@ const Login = () => {
       setToken(token.token);
       history.replace(PageEnum.BASE_HOME);
       await refreshState();
-    } catch (error) {}
+    } catch (error) {
+      refresh();
+    }
   };
 
   return (
@@ -90,6 +93,7 @@ const Login = () => {
           </div>
         </LoginForm>
       </div>
+      <Footer />
     </div>
   );
 };

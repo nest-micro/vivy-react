@@ -1,5 +1,4 @@
 import React from 'react';
-import { GithubOutlined } from '@ant-design/icons';
 import { DefaultFooter } from '@ant-design/pro-components';
 
 const Footer: React.FC = () => {
@@ -8,24 +7,12 @@ const Footer: React.FC = () => {
       style={{
         background: 'none',
       }}
-      copyright={`${new Date().getFullYear()} 蚂蚁集团体验技术部出品`}
+      copyright={`${new Date().getFullYear()} haiweilian`}
       links={[
         {
-          key: 'Ant Design Pro',
-          title: 'Ant Design Pro',
-          href: 'https://pro.ant.design',
-          blankTarget: true,
-        },
-        {
-          key: 'github',
-          title: <GithubOutlined />,
-          href: 'https://github.com/ant-design/ant-design-pro',
-          blankTarget: true,
-        },
-        {
-          key: 'Ant Design',
-          title: 'Ant Design',
-          href: 'https://ant.design',
+          key: 'Vivy React',
+          title: 'Vivy React',
+          href: 'https://github.com/bfehub/vivy-react',
           blankTarget: true,
         },
       ]}

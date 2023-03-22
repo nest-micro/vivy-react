@@ -115,9 +115,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 };
 
 /**
- * @name Request 运行时布局配置
+ * @name Request 运行时请求配置
  * @doc https://umijs.org/docs/max/request
  */
+const status = { isOpen: true };
 export const request: RequestConfig = {
   timeout: 1000 * 60,
   requestInterceptors: [
@@ -149,15 +150,22 @@ export const request: RequestConfig = {
             return Promise.reject(message);
           }
         } else if (code === 401) {
-          Modal.confirm({
-            title: '系统提示',
-            content: '登录状态已过期，您可以继续留在该页面，或者重新登录',
-            cancelText: '取消',
-            okText: '重新登录',
-            onOk() {
-              history.push(PageEnum.BASE_LOGIN);
-            },
-          });
+          if (status.isOpen) {
+            status.isOpen = false;
+            Modal.confirm({
+              title: '系统提示',
+              content: '登录状态已过期，您可以继续留在该页面，或者重新登录',
+              cancelText: '取消',
+              okText: '重新登录',
+              onOk() {
+                status.isOpen = true;
+                history.push(PageEnum.BASE_LOGIN);
+              },
+              onCancel() {
+                status.isOpen = true;
+              },
+            });
+          }
           return Promise.reject('无效的会话，或者会话已过期，请重新登录。');
         } else if (code === 500) {
           Message.error(message);

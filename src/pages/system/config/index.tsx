@@ -18,27 +18,32 @@ const Post = () => {
    */
   const columns: ProColumns<API.Indexable>[] = [
     {
-      title: '岗位编号',
-      dataIndex: 'postId',
+      title: '参数主键',
+      dataIndex: 'configId',
     },
     {
-      title: '岗位编码',
-      dataIndex: 'postCode',
+      title: '参数名称',
+      dataIndex: 'configName',
     },
     {
-      title: '岗位名称',
-      dataIndex: 'postName',
+      title: '参数键名',
+      dataIndex: 'configKey',
     },
     {
-      title: '显示顺序',
-      dataIndex: 'postSort',
+      title: '参数键值',
+      dataIndex: 'configValue',
+      ellipsis: true,
     },
     {
-      title: '状态',
-      dataIndex: 'status',
+      title: '系统内置',
+      dataIndex: 'configType',
       render: (_, record) => {
-        return <DictTag type={'sys_normal_disable'} value={record.status} />;
+        return <DictTag type={'sys_yes_no'} value={record.configType} />;
       },
+    },
+    {
+      title: '备注',
+      dataIndex: 'remark',
     },
     {
       title: '创建时间',
@@ -71,8 +76,8 @@ const Post = () => {
   return (
     <>
       <ProTable
-        rowKey="postId"
-        headerTitle="岗位列表"
+        rowKey="configId"
+        headerTitle="参数列表"
         bordered
         columns={columns}
         actionRef={actionRef}
@@ -82,7 +87,7 @@ const Post = () => {
         }}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listPost({
+          return services.SystemController.listConfig({
             ...params,
             pageNum: params.current,
           });

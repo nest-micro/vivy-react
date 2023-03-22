@@ -3,11 +3,13 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
+import { useParams } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
-import UpdateForm from './components/UpdateForm';
+import UpdateForm from './components-data/UpdateForm';
 import services from '@/services';
 
-const Post = () => {
+const DictData = () => {
+  const { type } = useParams();
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [recordData, setRecordData] = useState<API.Indexable>({});
@@ -18,20 +20,20 @@ const Post = () => {
    */
   const columns: ProColumns<API.Indexable>[] = [
     {
-      title: '岗位编号',
-      dataIndex: 'postId',
+      title: '字典编码',
+      dataIndex: 'dictCode',
     },
     {
-      title: '岗位编码',
-      dataIndex: 'postCode',
+      title: '字典标签',
+      dataIndex: 'dictLabel',
     },
     {
-      title: '岗位名称',
-      dataIndex: 'postName',
+      title: '字典键值',
+      dataIndex: 'dictValue',
     },
     {
-      title: '显示顺序',
-      dataIndex: 'postSort',
+      title: '字典排序',
+      dataIndex: 'status',
     },
     {
       title: '状态',
@@ -39,6 +41,10 @@ const Post = () => {
       render: (_, record) => {
         return <DictTag type={'sys_normal_disable'} value={record.status} />;
       },
+    },
+    {
+      title: '备注',
+      dataIndex: 'remark',
     },
     {
       title: '创建时间',
@@ -71,7 +77,7 @@ const Post = () => {
   return (
     <>
       <ProTable
-        rowKey="postId"
+        rowKey="dictId"
         headerTitle="岗位列表"
         bordered
         columns={columns}
@@ -82,10 +88,7 @@ const Post = () => {
         }}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listPost({
-            ...params,
-            pageNum: params.current,
-          });
+          return services.SystemController.getDict(type!);
         }}
         toolbar={{
           actions: [
@@ -123,4 +126,4 @@ const Post = () => {
   );
 };
 
-export default Post;
+export default DictData;
