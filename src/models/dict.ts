@@ -1,4 +1,5 @@
 import { useMap } from 'ahooks';
+import { useCallback } from 'react';
 import { isArray } from 'lodash-es';
 import { isNullOrUndef } from '@/utils/is';
 import services from '@/services';
@@ -60,10 +61,10 @@ export default () => {
 
   return {
     dict,
-    getDict,
-    setDict: actions.set,
-    removeDict,
-    reloadDict,
-    registerDict,
+    getDict: useCallback(getDict, [dict]),
+    setDict: useCallback(actions.set, []),
+    removeDict: useCallback(removeDict, []),
+    reloadDict: useCallback(reloadDict, []),
+    registerDict: useCallback(registerDict, []),
   };
 };

@@ -69,6 +69,7 @@ const Login = () => {
               fieldProps={{
                 size: 'large',
                 prefix: <KeyOutlined className={'prefixIcon'} />,
+                autoFocus: true,
               }}
               placeholder={'验证码'}
               rules={[

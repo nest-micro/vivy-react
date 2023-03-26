@@ -1,5 +1,5 @@
 import { useModel } from '@umijs/max';
-import { useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { Tag } from 'antd';
 import { DictType, DictKeys } from '@/models/dict';
 
@@ -18,7 +18,7 @@ const getColor = (color: string) => {
 };
 
 const DictTag: React.FC<DictProps> = ({ type, value }) => {
-  const { dict, getDict, registerDict } = useModel('dict');
+  const { getDict, registerDict } = useModel('dict');
 
   useEffect(() => {
     registerDict([type]);
@@ -26,7 +26,7 @@ const DictTag: React.FC<DictProps> = ({ type, value }) => {
 
   const data = useMemo(() => {
     return getDict(type, value);
-  }, [dict, type, value]);
+  }, [type, value, getDict]);
 
   return (
     <span>
@@ -39,4 +39,4 @@ const DictTag: React.FC<DictProps> = ({ type, value }) => {
   );
 };
 
-export default DictTag;
+export default memo(DictTag);

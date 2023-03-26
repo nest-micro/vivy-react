@@ -17,7 +17,7 @@ const Role = () => {
   /**
    * @description 字典数据
    */
-  const { dict, registerDict } = useModel('dict');
+  const { getDict, registerDict } = useModel('dict');
   useEffect(() => {
     registerDict(['sys_normal_disable']);
   }, []);
@@ -48,7 +48,7 @@ const Role = () => {
       title: '状态',
       dataIndex: 'status',
       valueType: 'select',
-      fieldProps: { options: dict.get('sys_normal_disable') || [] },
+      fieldProps: { options: getDict('sys_normal_disable') || [] },
       render: (_, record) => {
         return <DictTag type={'sys_normal_disable'} value={record.status} />;
       },
