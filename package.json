@@ -2,7 +2,9 @@
   "name": "vivy-react",
   "version": "0.0.1",
   "private": true,
+  "license": "MIT",
   "author": "haiweilian <haiweilian@foxmail.com>",
+  "homepage": "https://github.com/bfehub/vivy-react",
   "scripts": {
     "build": "max build",
     "dev": "max dev",
