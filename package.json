@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "author": "haiweilian <haiweilian@foxmail.com>",
-  "homepage": "https://github.com/bfehub/vivy-react",
+  "homepage": "https://github.com/nest-micro/vivy-react",
   "scripts": {
     "build": "max build",
     "dev": "max dev",
