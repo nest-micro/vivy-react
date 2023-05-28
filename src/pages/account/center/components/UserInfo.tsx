@@ -1,6 +1,6 @@
 import { List, Avatar } from 'antd';
 
-const UserInfo: React.FC<{ user: API.UserInfo['user'] }> = ({ user }) => {
+const UserInfo: React.FC<{ user: UserInfo }> = ({ user }) => {
   return (
     <List>
       <List.Item className="!justify-center">
@@ -23,15 +23,11 @@ const UserInfo: React.FC<{ user: API.UserInfo['user'] }> = ({ user }) => {
       </List.Item>
       <List.Item>
         <span>所属部门</span>
-        <span>{user.dept.deptName}</span>
+        {/* <span>{user.dept.deptName}</span> */}
       </List.Item>
       <List.Item>
         <span>所属角色</span>
-        <span>{user.roles[0].roleName}</span>
-      </List.Item>
-      <List.Item>
-        <span>创建日期</span>
-        <span>{user.createTime}</span>
+        {/* <span>{user.roles[0].roleName}</span> */}
       </List.Item>
     </List>
   );

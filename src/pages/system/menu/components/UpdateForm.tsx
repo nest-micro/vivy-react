@@ -11,7 +11,7 @@ import {
 import { AppstoreOutlined } from '@ant-design/icons';
 import { useRef, useEffect } from 'react';
 import { IconPicker } from '@/components/Icon';
-import services from '@/services';
+import type { MenuTreeVo } from '@/apis/types/system/menu';
 
 export type MenuType = { label: string; value: 'M' | 'C' | 'F' };
 export const menuTypeOptions: MenuType[] = [
@@ -21,7 +21,7 @@ export const menuTypeOptions: MenuType[] = [
 ];
 
 interface UpdateFormProps extends DrawerFormProps {
-  record: API.Indexable;
+  record: Nullable<MenuTreeVo>;
 }
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
@@ -41,7 +41,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       layout="horizontal"
       labelCol={{ flex: '100px' }}
       formRef={formRef}
-      title={record.menuId ? `更新菜单-${record.menuName}` : `新增菜单`}
+      title={record ? `更新菜单-${record.menuName}` : `新增菜单`}
       onFinish={async (formData) => {
         props.onFinish?.(formData);
         console.log(formData);
@@ -55,7 +55,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
         fieldProps={{
           fieldNames: { label: 'menuName', value: 'menuId' },
         }}
-        request={() => services.SystemController.listMenu({}).then(({ data }) => data)}
+        // request={() => services.SystemController.listMenu({}).then(({ data }) => data)}
       />
       <ProFormRadio.Group
         name="menuType"
@@ -149,14 +149,14 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
                 label="显示状态"
                 tooltip="选择隐藏则路由将不会出现在侧边栏，但仍然可以访问"
                 initialValue={'0'}
-                request={() =>
-                  services.SystemController.getDict('sys_show_hide').then(({ data }) =>
-                    data.map((i: any) => ({
-                      label: i.dictLabel,
-                      value: i.dictValue,
-                    })),
-                  )
-                }
+                // request={() =>
+                //   services.SystemController.getDict('sys_show_hide').then(({ data }) =>
+                //     data.map((i: any) => ({
+                //       label: i.dictLabel,
+                //       value: i.dictValue,
+                //     })),
+                //   )
+                // }
               />
             ) : null}
             {menuType !== 'F' ? (
@@ -164,14 +164,14 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
                 name="status"
                 label="菜单状态"
                 initialValue={'0'}
-                request={() =>
-                  services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
-                    data.map((i: any) => ({
-                      label: i.dictLabel,
-                      value: i.dictValue,
-                    })),
-                  )
-                }
+                // request={() =>
+                //   services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
+                //     data.map((i: any) => ({
+                //       label: i.dictLabel,
+                //       value: i.dictValue,
+                //     })),
+                //   )
+                // }
               />
             ) : null}
           </>

@@ -3,36 +3,56 @@ import type { RunTimeLayoutConfig, RequestConfig } from '@umijs/max';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { QuestionCircleOutlined, GithubOutlined } from '@ant-design/icons';
-import { message as Message, notification as Notification, Modal } from 'antd';
+import { message as Message, Modal } from 'antd';
 import defaultSettings from '../config/setting';
 import { AvatarName, AvatarDropdown } from '@/components/Layout';
 import { getToken, removeToken } from '@/utils/auth';
 import { PageEnum } from '@/enums/pageEnum';
-import services from './services';
+import { getLoginUserInfo } from '@/apis/system/user';
 
 /**
  * @name InitialState 全局初始化数据配置用于 Layout 用户信息和权限初始化
  * @doc https://umijs.org/docs/api/runtime-config#getinitialstate
  */
-export async function getInitialState(): Promise<{
+interface InitialState {
   settings?: Partial<LayoutSettings>;
   token?: string;
-  userInfo?: API.UserInfo;
-}> {
+  roles?: string[];
+  permissions?: string[];
+  userInfo?: UserInfo;
+  fetchUserInfo?: () => Promise<
+    | {
+        roles?: string[];
+        permissions?: string[];
+        userInfo?: UserInfo;
+      }
+    | undefined
+  >;
+}
+export async function getInitialState(): Promise<InitialState> {
   const token = getToken();
   const location = history.location;
-  if (token && location.pathname !== PageEnum.BASE_LOGIN) {
+  const fetchUserInfo = async () => {
     try {
-      const userInfo = await services.UserController.getInfo();
+      const { roles, permissions, sysUser } = await getLoginUserInfo();
       return {
-        token,
-        userInfo,
-        settings: defaultSettings as Partial<LayoutSettings>,
+        roles,
+        permissions,
+        userInfo: sysUser,
       };
     } catch (error) {
       removeToken();
       history.push(PageEnum.BASE_LOGIN);
+      throw error;
     }
+  };
+  if (token && location.pathname !== PageEnum.BASE_LOGIN) {
+    const userInfo = await fetchUserInfo();
+    return {
+      fetchUserInfo,
+      ...userInfo,
+      settings: defaultSettings as Partial<LayoutSettings>,
+    };
   } else {
     removeToken();
     if (location.pathname !== PageEnum.BASE_LOGIN) {
@@ -41,6 +61,7 @@ export async function getInitialState(): Promise<{
   }
 
   return {
+    fetchUserInfo,
     settings: defaultSettings as Partial<LayoutSettings>,
   };
 }
@@ -50,7 +71,7 @@ export async function getInitialState(): Promise<{
  * @doc https://procomponents.ant.design/components/layout#prolayout
  */
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
-  const user = initialState?.userInfo?.user || ({} as API.UserInfo['user']);
+  const user = initialState?.userInfo as UserInfo;
 
   return {
     avatarProps: {
@@ -141,7 +162,7 @@ export const request: RequestConfig = {
     [
       (response: any) => {
         const code = response.data.code || 200;
-        const message = response.data.msg || '系统未知错误，请反馈给管理员';
+        const message = response.data.message || '系统未知错误，请反馈给管理员';
         const skipErrorHandler = response.config.skipErrorHandler;
 
         // 错误判断
@@ -167,38 +188,32 @@ export const request: RequestConfig = {
             });
           }
           return Promise.reject('无效的会话，或者会话已过期，请重新登录。');
-        } else if (code === 500) {
+        } else if (code !== 200) {
           Message.error(message);
           return Promise.reject(message);
-        } else if (code === 601) {
-          Message.warning(message);
-          return Promise.reject(message);
-        } else if (code !== 200) {
-          Notification.error({ message });
-          return Promise.reject(message);
         }
 
-        // 转换数据
-        if (response.data.rows) {
-          response.data.data = response.data.rows;
-        }
-
-        return response;
+        return response.data;
       },
-      (error: any) => {
-        let { message } = error;
+      // (error: any) => {
+      //   const skipErrorHandler = error.config.skipErrorHandler;
+      //   if (skipErrorHandler) {
+      //     return Promise.reject(error);
+      //   }
 
-        if (message === 'Network Error') {
-          message = '后端接口连接异常';
-        } else if (message.includes('timeout')) {
-          message = '系统接口请求超时';
-        } else if (message.includes('Request failed with status code')) {
-          message = '系统接口' + message.substr(message.length - 3) + '异常';
-        }
+      //   let { message } = error;
 
-        Message.error(message);
-        return Promise.reject(error);
-      },
+      //   if (message === 'Network Error') {
+      //     message = '后端接口连接异常';
+      //   } else if (message.includes('timeout')) {
+      //     message = '系统接口请求超时';
+      //   } else if (message.includes('Request failed with status code')) {
+      //     message = '系统接口' + message.substr(message.length - 3) + '异常';
+      //   }
+
+      //   Message.error(message);
+      //   return Promise.reject(error);
+      // },
     ],
   ],
 };

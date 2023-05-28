@@ -4,7 +4,7 @@
  */
 export default {
   '/api/': {
-    target: 'http://vue.ruoyi.vip/prod-api',
+    target: 'http://localhost:8080',
     changeOrigin: true,
     pathRewrite: { '^/api': '' },
   },

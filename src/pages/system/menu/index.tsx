@@ -5,17 +5,18 @@ import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import services from '@/services';
+import { treeMenu } from '@/apis/system/menu';
+import type { MenuTreeVo } from '@/apis/types/system/menu';
 
 const Menu = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [recordData, setRecordData] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<Nullable<MenuTreeVo>>(null);
 
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<MenuTreeVo>[] = [
     {
       title: '菜单名称',
       dataIndex: 'menuName',
@@ -91,10 +92,12 @@ const Menu = () => {
         actionRef={actionRef}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listMenu({
-            ...params,
-            pageNum: params.current,
+          const data = await treeMenu({
+            // ...params,
           });
+          return {
+            data: data,
+          };
         }}
         toolbar={{
           actions: [
@@ -103,7 +106,7 @@ const Menu = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => {
-                setRecordData({});
+                setRecordData(null);
                 setUpdateOpen(true);
               }}
             >

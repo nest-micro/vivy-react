@@ -9,10 +9,10 @@ import {
   ProFormTextArea,
 } from '@ant-design/pro-components';
 import { useRef, useEffect } from 'react';
-import services from '@/services';
+import type { SysRole } from '@/apis/types/system/role';
 
 interface UpdateFormProps extends DrawerFormProps {
-  record: API.Indexable;
+  record: Nullable<SysRole>;
 }
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
@@ -32,7 +32,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       layout="horizontal"
       labelCol={{ flex: '100px' }}
       formRef={formRef}
-      title={record.roleId ? `更新角色-${record.roleName}` : `新增角色`}
+      title={record ? `更新角色-${record.roleName}` : `新增角色`}
       onFinish={async (formData) => {
         props.onFinish?.(formData);
         console.log(formData);
@@ -40,15 +40,10 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       }}
     >
       <ProFormText name="roleName" label="角色名称" rules={[{ required: true }]} />
-      <ProFormText
-        name="roleKey"
-        label="权限字符"
-        tooltip="控制器中定义的权限字符，如：@PreAuthorize(`@ss.hasRole('admin')`)"
-        rules={[{ required: true }]}
-      />
+      <ProFormText name="roleCode" label="权限字符" rules={[{ required: true }]} />
       <ProFormDigit
         name="roleSort"
-        label="角色顺序"
+        label="显示顺序"
         fieldProps={{ min: 0, precision: 0 }}
         rules={[{ required: true }]}
       />
@@ -56,14 +51,14 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
         name="status"
         label="状态"
         initialValue={'0'}
-        request={() =>
-          services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
-            data.map((i: any) => ({
-              label: i.dictLabel,
-              value: i.dictValue,
-            })),
-          )
-        }
+        // request={() =>
+        //   services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
+        //     data.map((i: any) => ({
+        //       label: i.dictLabel,
+        //       value: i.dictValue,
+        //     })),
+        //   )
+        // }
       />
       <ProFormTreeSelect
         name="menuIds"
@@ -72,7 +67,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
           fieldNames: { label: 'menuName', value: 'menuId' },
           treeCheckable: true,
         }}
-        request={() => services.SystemController.listMenu({}).then(({ data }) => data)}
+        // request={() => services.SystemController.listMenu({}).then(({ data }) => data)}
       />
       <ProFormTextArea name="remark" label="备注" />
     </DrawerForm>

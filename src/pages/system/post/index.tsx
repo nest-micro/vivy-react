@@ -5,29 +5,30 @@ import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import services from '@/services';
+import { listPost } from '@/apis/system/post';
+import type { SysPost } from '@/apis/types/system/post';
 
 const Post = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [recordData, setRecordData] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<Nullable<SysPost>>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<SysPost>[] = [
     {
       title: '岗位编号',
       dataIndex: 'postId',
     },
     {
-      title: '岗位编码',
-      dataIndex: 'postCode',
-    },
-    {
       title: '岗位名称',
       dataIndex: 'postName',
+    },
+    {
+      title: '岗位编码',
+      dataIndex: 'postCode',
     },
     {
       title: '显示顺序',
@@ -82,10 +83,15 @@ const Post = () => {
         }}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listPost({
-            ...params,
-            pageNum: params.current,
+          const { items, meta } = await listPost({
+            // ...params,
+            page: params.current,
+            limit: params.pageSize,
           });
+          return {
+            data: items,
+            total: meta.totalItems,
+          };
         }}
         toolbar={{
           actions: [
@@ -94,7 +100,7 @@ const Post = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => {
-                setRecordData({});
+                setRecordData(null);
                 setUpdateOpen(true);
               }}
             >

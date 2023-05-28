@@ -1,11 +1,9 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { useRequest } from '@umijs/max';
-import services from '@/services';
+import { getLoginUserInfo } from '@/apis/system/user';
 
 const Home = () => {
-  const { data } = useRequest(() => {
-    return services.UserController.getInfo();
-  });
+  const { data } = useRequest(getLoginUserInfo);
 
   return (
     <PageContainer ghost>

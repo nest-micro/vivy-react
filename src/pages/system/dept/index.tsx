@@ -5,24 +5,25 @@ import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import services from '@/services';
+import { treeDept } from '@/apis/system/dept';
+import type { DeptTreeVo } from '@/apis/types/system/dept';
 
 const Dept = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [recordData, setRecordData] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<Nullable<DeptTreeVo>>(null);
 
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<DeptTreeVo>[] = [
     {
       title: '部门名称',
       dataIndex: 'deptName',
     },
     {
       title: '排序',
-      dataIndex: 'orderNum',
+      dataIndex: 'deptSort',
     },
     {
       title: '状态',
@@ -79,10 +80,12 @@ const Dept = () => {
         actionRef={actionRef}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listDept({
-            ...params,
-            pageNum: params.current,
+          const data = await treeDept({
+            // ...params,
           });
+          return {
+            data: data,
+          };
         }}
         toolbar={{
           actions: [
@@ -91,7 +94,7 @@ const Dept = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => {
-                setRecordData({});
+                setRecordData(null);
                 setUpdateOpen(true);
               }}
             >

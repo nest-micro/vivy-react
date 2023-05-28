@@ -8,10 +8,10 @@ import {
   ProFormTextArea,
 } from '@ant-design/pro-components';
 import { useRef, useEffect } from 'react';
-import services from '@/services';
+import type { SysPost } from '@/apis/types/system/post';
 
 interface UpdateFormProps extends DrawerFormProps {
-  record: API.Indexable;
+  record: Nullable<SysPost>;
 }
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
@@ -31,7 +31,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       layout="horizontal"
       labelCol={{ flex: '100px' }}
       formRef={formRef}
-      title={record.postId ? `更新岗位-${record.postName}` : `新增岗位`}
+      title={record ? `更新岗位-${record.postName}` : `新增岗位`}
       onFinish={async (formData) => {
         props.onFinish?.(formData);
         console.log(formData);
@@ -50,14 +50,14 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
         name="status"
         label="岗位状态"
         initialValue={'0'}
-        request={() =>
-          services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
-            data.map((i: any) => ({
-              label: i.dictLabel,
-              value: i.dictValue,
-            })),
-          )
-        }
+        // request={() =>
+        //   services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
+        //     data.map((i: any) => ({
+        //       label: i.dictLabel,
+        //       value: i.dictValue,
+        //     })),
+        //   )
+        // }
       />
       <ProFormTextArea name="remark" label="备注" />
     </DrawerForm>

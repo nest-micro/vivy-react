@@ -1,38 +1,45 @@
-import { LockOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
-import { Space } from 'antd';
-import { useRequest, useModel, history } from '@umijs/max';
+import { useModel, history } from '@umijs/max';
+import { message } from 'antd';
+import { flushSync } from 'react-dom';
 import { Footer } from '@/components/Layout';
 import { setToken } from '@/utils/auth';
 import { PageEnum } from '@/enums/pageEnum';
-import styles from './index.less';
-import services from '@/services';
+import { login } from '@/apis/auth/auth';
+import type { LoginInfoDto } from '@/apis/types/auth/auth';
 
 const Login = () => {
-  const { refresh: refreshState } = useModel('@@initialState');
+  const { initialState, setInitialState } = useModel('@@initialState');
 
-  const { data, refresh } = useRequest(() => {
-    return services.UserController.code();
-  });
-
-  const handleSubmit = async (values: API.Indexable) => {
-    try {
-      const token = await services.UserController.login({
-        ...values,
-        uuid: data.uuid,
+  const fetchUserInfo = async (): Promise<void> => {
+    const userInfo = await initialState?.fetchUserInfo?.();
+    if (userInfo) {
+      flushSync(() => {
+        setInitialState((s) => ({
+          ...s,
+          ...userInfo,
+        }));
       });
-      setToken(token.token);
+    }
+  };
+
+  const handleLogin = async (values: LoginInfoDto) => {
+    try {
+      const token = await login(values);
+      setToken(token.access_token);
+      await fetchUserInfo();
+      message.success('登录成功！');
       history.replace(PageEnum.BASE_HOME);
-      await refreshState();
     } catch (error) {
-      refresh();
+      message.error('登录失败，请重试！');
     }
   };
 
   return (
     <div className="flex flex-col justify-center h-full">
       <div>
-        <LoginForm title="Vivy" subTitle="基于 Nest & React 权限管理系统" onFinish={handleSubmit}>
+        <LoginForm title="Vivy" subTitle="基于 Nest & React 权限管理系统" onFinish={handleLogin}>
           <ProFormText
             name="username"
             initialValue={'admin'}
@@ -50,7 +57,7 @@ const Login = () => {
           />
           <ProFormText.Password
             name="password"
-            initialValue={'admin123'}
+            initialValue={'Aa@123456'}
             fieldProps={{
               size: 'large',
               prefix: <LockOutlined className={'prefixIcon'} />,
@@ -63,7 +70,7 @@ const Login = () => {
               },
             ]}
           />
-          <Space>
+          {/* <Space>
             <ProFormText
               name="code"
               fieldProps={{
@@ -84,7 +91,7 @@ const Login = () => {
               src={`data:image/gif;base64,${data?.img}`}
               onClick={refresh}
             />
-          </Space>
+          </Space> */}
 
           <div className="mb-5">
             <ProFormCheckbox noStyle name="autoLogin">

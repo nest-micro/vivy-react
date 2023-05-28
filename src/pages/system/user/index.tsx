@@ -1,6 +1,6 @@
 import { Tree, Button, Popconfirm } from 'antd';
 import { PlusOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
-import type { TreeProps } from 'antd/es/tree';
+import type { TreeProps, TreeDataNode } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { useRequest, useModel } from '@umijs/max';
@@ -8,10 +8,12 @@ import { useEffect, useRef, useState } from 'react';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
 import ImportForm from './components/ImportForm';
-import services from '@/services';
+import { treeDept } from '@/apis/system/dept';
+import { listUser } from '@/apis/system/user';
+import type { SysUser } from '@/apis/types/system/user';
 
 const User = () => {
-  const { data: deptData } = useRequest(services.SystemController.listDept);
+  const { data: deptData } = useRequest(treeDept);
   const onDeptSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
     console.log('selected', selectedKeys, info);
   };
@@ -19,7 +21,7 @@ const User = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [recordData, setRecordData] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<Nullable<SysUser>>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
@@ -33,11 +35,10 @@ const User = () => {
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<SysUser>[] = [
     {
       title: '用户编号',
       dataIndex: 'userId',
-      hideInSearch: true,
     },
     {
       title: '用户名称',
@@ -46,15 +47,13 @@ const User = () => {
     {
       title: '用户昵称',
       dataIndex: 'nickName',
-      hideInSearch: true,
     },
     {
       title: '归属部门',
       dataIndex: 'deptName',
-      hideInSearch: true,
-      render: (_, record) => {
-        return record.dept.deptName;
-      },
+      // render: (_, record) => {
+      //   return record.dept.deptName;
+      // },
     },
     {
       title: '手机号码',
@@ -72,13 +71,6 @@ const User = () => {
     {
       title: '创建时间',
       dataIndex: 'createTime',
-      hideInSearch: true,
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createTimeRange',
-      valueType: 'dateRange',
-      hideInTable: true,
     },
     {
       title: '操作',
@@ -107,12 +99,12 @@ const User = () => {
   return (
     <>
       <div className="flex h-full">
-        {deptData?.data ? (
+        {deptData ? (
           <Tree
             className="w-[250px] pt-2 pb-2"
             defaultExpandAll
             onSelect={onDeptSelect}
-            treeData={deptData.data}
+            treeData={deptData as unknown as TreeDataNode[]}
             fieldNames={{ key: 'deptId', title: 'deptName' }}
           />
         ) : null}
@@ -129,14 +121,15 @@ const User = () => {
           }}
           request={async (params, sort, filter) => {
             console.log(params, sort, filter);
-            return services.SystemController.listUser({
-              ...params,
-              pageNum: params.current,
-              current: undefined,
-              beginTime: params.createTimeRange?.[0],
-              endTime: params.createTimeRange?.[1],
-              createTimeRange: undefined,
+            const { items, meta } = await listUser({
+              // ...params,
+              page: params.current,
+              limit: params.pageSize,
             });
+            return {
+              data: items,
+              total: meta.totalItems,
+            };
           }}
           toolbar={{
             actions: [
@@ -145,7 +138,7 @@ const User = () => {
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => {
-                  setRecordData({});
+                  setRecordData(null);
                   setUpdateOpen(true);
                 }}
               >

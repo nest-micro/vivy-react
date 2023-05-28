@@ -1,7 +1,8 @@
 import { useModel } from '@umijs/max';
 import { memo, useEffect, useMemo } from 'react';
 import { Tag } from 'antd';
-import { DictType, DictKeys } from '@/models/dict';
+import { DictKeys } from '@/models/dict';
+import { isNullOrUndef } from '@/utils/is';
 
 type DictProps = {
   type: DictType;
@@ -25,7 +26,7 @@ const DictTag: React.FC<DictProps> = ({ type, value }) => {
   }, [type]);
 
   const data = useMemo(() => {
-    return getDict(type, value);
+    return getDict(type, isNullOrUndef(value) ? [] : value);
   }, [type, value, getDict]);
 
   return (

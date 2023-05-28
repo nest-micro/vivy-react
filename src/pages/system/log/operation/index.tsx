@@ -4,17 +4,18 @@ import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm, Drawer, Descriptions } from 'antd';
 import React, { useState } from 'react';
 import { DictTag, DictText } from '@/components/Dict';
-import services from '@/services';
+import { listOperLog } from '@/apis/system/oper-log';
+import { SysOperLog } from '@/apis/types/system/oper-log';
 
 const OperationLog = () => {
   const [open, setOpen] = useState(false);
-  const [recordData, setRecordData] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<Nullable<SysOperLog>>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<SysOperLog>[] = [
     {
       title: '日志编号',
       dataIndex: 'operId',
@@ -25,9 +26,9 @@ const OperationLog = () => {
     },
     {
       title: '操作类型',
-      dataIndex: 'businessType',
+      dataIndex: 'operType',
       render: (_, record) => {
-        return <DictTag type={'sys_oper_type'} value={record.businessType} />;
+        return <DictTag type={'sys_oper_type'} value={record.operType} />;
       },
     },
     {
@@ -40,14 +41,14 @@ const OperationLog = () => {
     },
     {
       title: '操作状态',
-      dataIndex: 'status',
+      dataIndex: 'operStatus',
       render: (_, record) => {
-        return <DictTag type={'sys_common_status'} value={record.status} />;
+        return <DictTag type={'sys_oper_status'} value={record.operStatus} />;
       },
     },
     {
       title: '操作日期',
-      dataIndex: 'operTime',
+      dataIndex: 'createdTime',
     },
     {
       title: '操作',
@@ -81,10 +82,15 @@ const OperationLog = () => {
         }}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listOperlog({
-            ...params,
-            pageNum: params.current,
+          const { items, meta } = await listOperLog({
+            // ...params,
+            page: params.current,
+            limit: params.pageSize,
           });
+          return {
+            data: items,
+            total: meta.totalItems,
+          };
         }}
         toolbar={{
           actions: [
@@ -110,29 +116,34 @@ const OperationLog = () => {
         }}
       />
       <Drawer title="操作日志详情" width={1000} open={open} onClose={() => setOpen(false)}>
-        <Descriptions column={2}>
-          <Descriptions.Item label="操作模块">
-            {recordData.title} / <DictText type={'sys_oper_type'} value={recordData.businessType} />
-          </Descriptions.Item>
-          <Descriptions.Item label="登录信息">
-            {recordData.operName} / {recordData.operIp} / {recordData.operLocation}
-          </Descriptions.Item>
-          <Descriptions.Item label="请求方式">{recordData.requestMethod}</Descriptions.Item>
-          <Descriptions.Item label="请求地址">{recordData.operUrl}</Descriptions.Item>
-          <Descriptions.Item label="操作方法" span={2}>
-            {recordData.method}
-          </Descriptions.Item>
-          <Descriptions.Item label="请求参数" span={2}>
-            {recordData.operParam}
-          </Descriptions.Item>
-          <Descriptions.Item label="返回参数" span={2}>
-            {recordData.jsonResult}
-          </Descriptions.Item>
-          <Descriptions.Item label="操作状态">
-            <DictText type={'sys_common_status'} value={recordData.status} />
-          </Descriptions.Item>
-          <Descriptions.Item label="操作时间">{recordData.operTime}</Descriptions.Item>
-        </Descriptions>
+        {recordData ? (
+          <Descriptions column={2}>
+            <Descriptions.Item label="操作模块">
+              {recordData.title} / <DictText type={'sys_oper_type'} value={recordData.operType} />
+            </Descriptions.Item>
+            <Descriptions.Item label="登录信息">
+              {recordData.operName} / {recordData.operIp} / {recordData.operLocation}
+            </Descriptions.Item>
+            <Descriptions.Item label="请求方式">{recordData.requestMethod}</Descriptions.Item>
+            <Descriptions.Item label="请求地址">{recordData.requestUrl}</Descriptions.Item>
+            <Descriptions.Item label="操作方法" span={2}>
+              {recordData.operMethod}
+            </Descriptions.Item>
+            <Descriptions.Item label="请求参数" span={2}>
+              {recordData.requestParam}
+            </Descriptions.Item>
+            <Descriptions.Item label="返回参数" span={2}>
+              {recordData.requestResult}
+            </Descriptions.Item>
+            <Descriptions.Item label="错误消息" span={2}>
+              {recordData.requestErrmsg}
+            </Descriptions.Item>
+            <Descriptions.Item label="操作状态" span={2}>
+              <DictText type={'sys_oper_status'} value={recordData.operStatus} />
+            </Descriptions.Item>
+            <Descriptions.Item label="操作时间">{recordData.createdTime}</Descriptions.Item>
+          </Descriptions>
+        ) : null}
       </Drawer>
     </>
   );

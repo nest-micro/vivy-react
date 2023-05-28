@@ -6,18 +6,19 @@ import { useRef, useState } from 'react';
 import { Link } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import services from '@/services';
+import { listDictType } from '@/apis/system/dict-type';
+import type { SysDictType } from '@/apis/types/system/dict-type';
 
 const Dict = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [recordData, setRecordData] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<Nullable<SysDictType>>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<SysDictType>[] = [
     {
       title: '字典编号',
       dataIndex: 'dictId',
@@ -34,15 +35,15 @@ const Dict = () => {
       },
     },
     {
+      title: '显示顺序',
+      dataIndex: 'dictSort',
+    },
+    {
       title: '状态',
       dataIndex: 'status',
       render: (_, record) => {
         return <DictTag type={'sys_normal_disable'} value={record.status} />;
       },
-    },
-    {
-      title: '备注',
-      dataIndex: 'remark',
     },
     {
       title: '创建时间',
@@ -76,7 +77,7 @@ const Dict = () => {
     <>
       <ProTable
         rowKey="dictId"
-        headerTitle="岗位列表"
+        headerTitle="字典列表"
         bordered
         columns={columns}
         actionRef={actionRef}
@@ -86,10 +87,15 @@ const Dict = () => {
         }}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listDict({
-            ...params,
-            pageNum: params.current,
+          const { items, meta } = await listDictType({
+            // ...params,
+            page: params.current,
+            limit: params.pageSize,
           });
+          return {
+            data: items,
+            total: meta.totalItems,
+          };
         }}
         toolbar={{
           actions: [
@@ -98,7 +104,7 @@ const Dict = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => {
-                setRecordData({});
+                setRecordData(null);
                 setUpdateOpen(true);
               }}
             >

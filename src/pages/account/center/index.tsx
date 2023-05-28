@@ -3,18 +3,17 @@ import { useRequest } from '@umijs/max';
 import UserInfo from './components/UserInfo';
 import UpdateInfo from './components/UpdateInfo';
 import UpdatePassword from './components/UpdatePassword';
-import services from '@/services';
+import { getLoginUserInfo } from '@/apis/system/user';
 
 const Center = () => {
-  const { data, loading } = useRequest(services.UserController.getUserProfile, {
-    initialData: { data: {} },
-  });
+  const { data, loading } = useRequest(getLoginUserInfo);
+  if (!data) return null;
 
   return (
     <Row>
       <Col span={8}>
         <Card title="基本信息" bodyStyle={{ paddingTop: '0px' }} loading={loading}>
-          <UserInfo user={data.data} />
+          <UserInfo user={data.sysUser} />
         </Card>
       </Col>
       <Col span={15} className="ml-4">
@@ -25,7 +24,7 @@ const Center = () => {
               {
                 key: 'info',
                 label: '基本资料',
-                children: <UpdateInfo user={data.data} />,
+                children: <UpdateInfo user={data.sysUser} />,
               },
               {
                 key: 'password',

@@ -6,12 +6,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useModel } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import services from '@/services';
+import { listRole } from '@/apis/system/role';
+import type { SysRole } from '@/apis/types/system/role';
 
 const Role = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [recordData, setRecordData] = useState<API.Indexable>({});
+  const [recordData, setRecordData] = useState<Nullable<SysRole>>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
@@ -25,11 +26,10 @@ const Role = () => {
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<SysRole>[] = [
     {
       title: '角色编号',
       dataIndex: 'roleId',
-      hideInSearch: true,
     },
     {
       title: '角色名称',
@@ -37,12 +37,11 @@ const Role = () => {
     },
     {
       title: '权限字符',
-      dataIndex: 'roleKey',
+      dataIndex: 'roleCode',
     },
     {
       title: '显示顺序',
       dataIndex: 'roleSort',
-      hideInSearch: true,
     },
     {
       title: '状态',
@@ -95,10 +94,15 @@ const Role = () => {
         }}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          return services.SystemController.listRole({
-            ...params,
-            pageNum: params.current,
+          const { items, meta } = await listRole({
+            // ...params,
+            page: params.current,
+            limit: params.pageSize,
           });
+          return {
+            data: items,
+            total: meta.totalItems,
+          };
         }}
         toolbar={{
           actions: [
@@ -107,7 +111,7 @@ const Role = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => {
-                setRecordData({});
+                setRecordData(null);
                 setUpdateOpen(true);
               }}
             >

@@ -6,30 +6,32 @@ import type { MenuInfo } from 'rc-menu/lib/interface';
 import { history, useModel } from '@umijs/max';
 import { removeToken } from '@/utils/auth';
 import { PageEnum } from '@/enums/pageEnum';
-import services from '@/services';
+import { logout } from '@/apis/auth/auth';
 
 const AvatarDropdown: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { setInitialState } = useModel('@@initialState');
 
-  const logout = async () => {
-    await services.UserController.logout();
+  const handleLogout = async () => {
+    await logout();
     history.replace(PageEnum.BASE_LOGIN);
     removeToken();
   };
 
   const onMenuClick = useCallback(
-    (event: MenuInfo) => {
+    async (event: MenuInfo) => {
       const { key } = event;
       if (key === 'logout') {
+        await handleLogout();
         flushSync(() => {
           setInitialState((s) => ({
             ...s,
             token: undefined,
+            roles: undefined,
+            permissions: undefined,
             userInfo: undefined,
           }));
         });
-        logout();
-      } else {
+      } else if (key === 'center') {
         history.push(`/account/${key}`);
       }
     },

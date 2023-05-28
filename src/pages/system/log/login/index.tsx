@@ -4,7 +4,8 @@ import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
 import React, { useState } from 'react';
 import { DictTag } from '@/components/Dict';
-import services from '@/services';
+import { listLoginLog } from '@/apis/system/login-log';
+import { SysLoginLog } from '@/apis/types/system/login-log';
 
 const LoginLog = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -12,18 +13,18 @@ const LoginLog = () => {
   /**
    * @description 表格配置
    */
-  const columns: ProColumns<API.Indexable>[] = [
+  const columns: ProColumns<SysLoginLog>[] = [
     {
       title: '访问编号',
-      dataIndex: 'infoId',
+      dataIndex: 'loginId',
     },
     {
       title: '用户名称',
-      dataIndex: 'userName',
+      dataIndex: 'loginName',
     },
     {
       title: '登录地址',
-      dataIndex: 'ipaddr',
+      dataIndex: 'loginIp',
     },
     {
       title: '登录地点',
@@ -39,20 +40,20 @@ const LoginLog = () => {
     },
     {
       title: '登录状态',
-      dataIndex: 'status',
+      dataIndex: 'loginStatus',
       render: (_, record) => {
-        return <DictTag type={'sys_common_status'} value={record.status} />;
+        return <DictTag type={'sys_oper_status'} value={record.loginStatus} />;
       },
     },
     {
       title: '登录日期',
-      dataIndex: 'loginTime',
+      dataIndex: 'createdTime',
     },
   ];
 
   return (
     <ProTable
-      rowKey="infoId"
+      rowKey="loginId"
       headerTitle="登录日志"
       bordered
       columns={columns}
@@ -62,10 +63,15 @@ const LoginLog = () => {
       }}
       request={async (params, sort, filter) => {
         console.log(params, sort, filter);
-        return services.SystemController.listLogininfor({
-          ...params,
-          pageNum: params.current,
+        const { items, meta } = await listLoginLog({
+          // ...params,
+          page: params.current,
+          limit: params.pageSize,
         });
+        return {
+          data: items,
+          total: meta.totalItems,
+        };
       }}
       toolbar={{
         actions: [

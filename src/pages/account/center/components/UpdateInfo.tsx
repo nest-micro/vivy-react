@@ -1,6 +1,6 @@
 import { ProForm, ProFormText, ProFormRadio } from '@ant-design/pro-components';
 
-const UpdateInfo: React.FC<{ user: API.UserInfo['user'] }> = ({ user }) => {
+const UpdateInfo: React.FC<{ user: UserInfo }> = ({ user }) => {
   return (
     <ProForm
       layout="horizontal"

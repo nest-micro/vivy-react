@@ -70,13 +70,8 @@ const routes = [
       {
         name: '字典数据',
         path: 'dict/:type',
-        component: './system/dict/data',
+        component: './system/dict/$type',
         hideInMenu: true,
-      },
-      {
-        name: '参数设置',
-        path: 'config',
-        component: './system/config',
       },
       {
         name: '日志管理',
