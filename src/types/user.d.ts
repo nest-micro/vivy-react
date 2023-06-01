@@ -65,7 +65,7 @@ declare interface LoginUserInfo {
   /**
    * 用户会话Key
    */
-  userKey: string;
+  userSk: string;
 
   /**
    * 用户Id

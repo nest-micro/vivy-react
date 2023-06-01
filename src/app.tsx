@@ -8,7 +8,7 @@ import defaultSettings from '../config/setting';
 import { AvatarName, AvatarDropdown } from '@/components/Layout';
 import { getToken, removeToken } from '@/utils/auth';
 import { PageEnum } from '@/enums/pageEnum';
-import { getLoginUserInfo } from '@/apis/system/user';
+import { getLoginUserInfo } from '@/apis/auth/auth';
 
 /**
  * @name InitialState 全局初始化数据配置用于 Layout 用户信息和权限初始化

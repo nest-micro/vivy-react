@@ -3,7 +3,7 @@ import { useRequest } from '@umijs/max';
 import UserInfo from './components/UserInfo';
 import UpdateInfo from './components/UpdateInfo';
 import UpdatePassword from './components/UpdatePassword';
-import { getLoginUserInfo } from '@/apis/system/user';
+import { getLoginUserInfo } from '@/apis/auth/auth';
 
 const Center = () => {
   const { data, loading } = useRequest(getLoginUserInfo);

@@ -4,8 +4,6 @@ import type { LoginInfoDto, LoginResultVo } from '@/apis/types/auth/auth';
 
 /**
  * 用户登录
- * @param params 账户信息
- * @returns {LoginResultVo}
  */
 export function login(params: LoginInfoDto) {
   return request<LoginResultVo>('/auth/login', {
@@ -18,10 +16,19 @@ export function login(params: LoginInfoDto) {
 
 /**
  * 用户退出
- * @returns
  */
 export function logout() {
   return request('/auth/logout', {
     method: RequestEnum.POST,
+  });
+}
+
+/**
+ * 用户登录信息
+ */
+export function getLoginUserInfo() {
+  return request<LoginUserInfo>('/auth/getLoginUserInfo', {
+    method: RequestEnum.GET,
+    skipErrorHandler: true,
   });
 }
