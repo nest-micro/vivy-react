@@ -1,21 +1,27 @@
-interface TreeHelperConfig {
+interface TreeConfig {
   id: string;
-  children: string;
   pid: string;
+  children: string;
 }
 
-const DEFAULT_CONFIG: TreeHelperConfig = {
+const DEFAULT_CONFIG: TreeConfig = {
   id: 'id',
   children: 'children',
   pid: 'pid',
 };
 
-const getConfig = (config: Partial<TreeHelperConfig>) => {
+const getConfig = (config: Partial<TreeConfig>) => {
   return Object.assign({}, DEFAULT_CONFIG, config);
 };
 
-export function listToTree<T = any>(list: any[], config: Partial<TreeHelperConfig> = {}): T[] {
-  const conf = getConfig(config) as TreeHelperConfig;
+/**
+ * 列表转树
+ * @param list 原始列表数据
+ * @param config 配置
+ * @returns 转换后的树数据
+ */
+export function listToTree<T = any>(list: any[], config: Partial<TreeConfig> = {}): T[] {
+  const conf = getConfig(config) as TreeConfig;
   const nodeMap = new Map();
   const result: T[] = [];
   const { id, children, pid } = conf;
@@ -31,13 +37,4 @@ export function listToTree<T = any>(list: any[], config: Partial<TreeHelperConfi
   }
 
   return result;
-}
-
-export function eachTree(treeDatas: any[], callback: (...args: any) => any, parentNode = {}) {
-  treeDatas.forEach((element) => {
-    const newNode = callback(element, parentNode) || element;
-    if (element.children) {
-      eachTree(element.children, callback, newNode);
-    }
-  });
 }

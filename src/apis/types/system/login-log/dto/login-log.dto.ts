@@ -1,8 +1,12 @@
 // import { Allow } from 'class-validator';
 // import { LoginType, OperStatus } from '@vivy-cloud/common-logger';
 // import { PartialType } from '@nestjs/mapped-types';
-// import { PaginateDto } from '@vivy-cloud/common-core';
 import { PaginateDto } from '@/apis/types/dto';
+
+/**
+ * 列表
+ */
+export type ListLoginLogDto = PaginateDto;
 
 /**
  * 新增
@@ -36,7 +40,7 @@ export interface CreateLoginLogDto {
   //   comment: '登录状态(enum OperStatus)',
   // })
   // @Allow()
-  loginStatus: number;
+  loginStatus: string;
 
   // @Column({
   //   name: 'login_ip',
@@ -91,8 +95,3 @@ export interface UpdateLoginLogDto extends Partial<CreateLoginLogDto> {
   // @Allow()
   loginId: number;
 }
-
-/**
- * 查询搜索
- */
-export type SearchLoginLogDto = PaginateDto;

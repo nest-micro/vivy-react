@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useModel } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import { listRole } from '@/apis/system/role';
+import { listRole, deleteRole } from '@/apis/system/role';
 import type { SysRole } from '@/apis/types/system/role';
 
 const Role = () => {
@@ -16,7 +16,7 @@ const Role = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
-   * @description 字典数据
+   * 注册字典数据
    */
   const { getDict, registerDict } = useModel('dict');
   useEffect(() => {
@@ -24,12 +24,23 @@ const Role = () => {
   }, []);
 
   /**
-   * @description 表格配置
+   * 删除角色
+   * @param roleIds 角色ID
+   */
+  const handleDelete = async (roleIds: React.Key) => {
+    await deleteRole(roleIds);
+    setSelectedRowKeys([]);
+    actionRef.current?.reload();
+  };
+
+  /**
+   * 表格列配置
    */
   const columns: ProColumns<SysRole>[] = [
     {
       title: '角色编号',
       dataIndex: 'roleId',
+      search: false,
     },
     {
       title: '角色名称',
@@ -42,6 +53,7 @@ const Role = () => {
     {
       title: '显示顺序',
       dataIndex: 'roleSort',
+      search: false,
     },
     {
       title: '状态',
@@ -55,6 +67,7 @@ const Role = () => {
     {
       title: '创建时间',
       dataIndex: 'createTime',
+      search: false,
     },
     {
       title: '操作',
@@ -71,7 +84,11 @@ const Role = () => {
         >
           修改
         </Button>,
-        <Popconfirm key="delete" title="是否确认删除？">
+        <Popconfirm
+          key="delete"
+          title="是否确认删除？"
+          onConfirm={() => handleDelete(record.roleId)}
+        >
           <Button type="link" danger>
             删除
           </Button>
@@ -95,7 +112,7 @@ const Role = () => {
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
           const { items, meta } = await listRole({
-            // ...params,
+            ...params,
             page: params.current,
             limit: params.pageSize,
           });
@@ -117,7 +134,12 @@ const Role = () => {
             >
               新增
             </Button>,
-            <Popconfirm key="delete" title="是否确认删除？" disabled={!selectedRowKeys.length}>
+            <Popconfirm
+              key="delete"
+              title="是否确认删除？"
+              disabled={!selectedRowKeys.length}
+              onConfirm={() => handleDelete(selectedRowKeys.join(','))}
+            >
               <Button
                 icon={<DeleteOutlined />}
                 type="primary"

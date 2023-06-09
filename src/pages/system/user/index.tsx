@@ -9,15 +9,10 @@ import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
 import ImportForm from './components/ImportForm';
 import { treeDept } from '@/apis/system/dept';
-import { listUser } from '@/apis/system/user';
+import { listUser, deleteUser } from '@/apis/system/user';
 import type { SysUser } from '@/apis/types/system/user';
 
 const User = () => {
-  const { data: deptData } = useRequest(treeDept);
-  const onDeptSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
-    console.log('selected', selectedKeys, info);
-  };
-
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -25,7 +20,7 @@ const User = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
-   * @description 字典数据
+   * 注册字典数据
    */
   const { getDict, registerDict } = useModel('dict');
   useEffect(() => {
@@ -33,12 +28,33 @@ const User = () => {
   }, []);
 
   /**
-   * @description 表格配置
+   * 部门树选择
+   */
+  const { data: deptData } = useRequest(treeDept);
+  const [selectedDeptKeys, setSelectedDeptKeys] = useState<React.Key[]>([]);
+  const onDeptSelect: TreeProps['onSelect'] = (selectedKeys) => {
+    setSelectedDeptKeys(selectedKeys);
+    actionRef.current?.reload();
+  };
+
+  /**
+   * 删除用户
+   * @param userIds 用户ID
+   */
+  const handleDelete = async (userIds: React.Key) => {
+    await deleteUser(userIds);
+    setSelectedRowKeys([]);
+    actionRef.current?.reload();
+  };
+
+  /**
+   * 表格列配置
    */
   const columns: ProColumns<SysUser>[] = [
     {
       title: '用户编号',
       dataIndex: 'userId',
+      search: false,
     },
     {
       title: '用户名称',
@@ -49,15 +65,9 @@ const User = () => {
       dataIndex: 'nickName',
     },
     {
-      title: '归属部门',
-      dataIndex: 'deptName',
-      // render: (_, record) => {
-      //   return record.dept.deptName;
-      // },
-    },
-    {
       title: '手机号码',
       dataIndex: 'phonenumber',
+      search: false,
     },
     {
       title: '状态',
@@ -71,6 +81,7 @@ const User = () => {
     {
       title: '创建时间',
       dataIndex: 'createTime',
+      search: false,
     },
     {
       title: '操作',
@@ -87,7 +98,11 @@ const User = () => {
         >
           修改
         </Button>,
-        <Popconfirm key="delete" title="是否确认删除？">
+        <Popconfirm
+          key="delete"
+          title="是否确认删除？"
+          onConfirm={() => handleDelete(record.userId)}
+        >
           <Button type="link" danger>
             删除
           </Button>
@@ -99,15 +114,13 @@ const User = () => {
   return (
     <>
       <div className="flex h-full">
-        {deptData ? (
-          <Tree
-            className="w-[250px] pt-2 pb-2"
-            defaultExpandAll
-            onSelect={onDeptSelect}
-            treeData={deptData as unknown as TreeDataNode[]}
-            fieldNames={{ key: 'deptId', title: 'deptName' }}
-          />
-        ) : null}
+        <Tree
+          className="w-[250px] pt-2 pb-2"
+          defaultExpandAll
+          onSelect={onDeptSelect}
+          treeData={deptData as unknown as TreeDataNode[]}
+          fieldNames={{ key: 'deptId', title: 'deptName' }}
+        />
         <ProTable
           className="flex-1 pl-4"
           rowKey="userId"
@@ -122,9 +135,10 @@ const User = () => {
           request={async (params, sort, filter) => {
             console.log(params, sort, filter);
             const { items, meta } = await listUser({
-              // ...params,
+              ...params,
               page: params.current,
               limit: params.pageSize,
+              deptId: selectedDeptKeys[0] as number,
             });
             return {
               data: items,
@@ -144,7 +158,12 @@ const User = () => {
               >
                 新增
               </Button>,
-              <Popconfirm key="delete" title="是否确认删除？" disabled={!selectedRowKeys.length}>
+              <Popconfirm
+                key="delete"
+                title="是否确认删除？"
+                disabled={!selectedRowKeys.length}
+                onConfirm={() => handleDelete(selectedRowKeys.join(','))}
+              >
                 <Button
                   icon={<DeleteOutlined />}
                   type="primary"

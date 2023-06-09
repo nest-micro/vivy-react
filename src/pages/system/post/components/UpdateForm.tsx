@@ -8,6 +8,8 @@ import {
   ProFormTextArea,
 } from '@ant-design/pro-components';
 import { useRef, useEffect } from 'react';
+import { useModel } from '@umijs/max';
+import { addPost, updatePost, infoPost } from '@/apis/system/post';
 import type { SysPost } from '@/apis/types/system/post';
 
 interface UpdateFormProps extends DrawerFormProps {
@@ -16,14 +18,35 @@ interface UpdateFormProps extends DrawerFormProps {
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
   const formRef = useRef<ProFormInstance>();
+  const { fetchDict } = useModel('dict');
 
   /**
-   * @description 获取初始化数据
+   * 获取初始化数据
    */
   useEffect(() => {
     formRef.current?.resetFields();
-    formRef.current?.setFieldsValue(record);
+    if (record) {
+      infoPost(record.postId).then((info) => {
+        formRef.current?.setFieldsValue(info);
+      });
+    }
   }, [record]);
+
+  /**
+   * 提交表单
+   * @param values 表单值
+   */
+  const handleSubmit = async (values: Recordable) => {
+    if (record) {
+      await updatePost({
+        ...values,
+        postId: record.postId,
+      });
+    } else {
+      await addPost(values);
+    }
+    formRef.current?.resetFields();
+  };
 
   return (
     <DrawerForm
@@ -32,32 +55,20 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       labelCol={{ flex: '100px' }}
       formRef={formRef}
       title={record ? `更新岗位-${record.postName}` : `新增岗位`}
-      onFinish={async (formData) => {
-        props.onFinish?.(formData);
-        console.log(formData);
+      onFinish={async (values) => {
+        await handleSubmit(values);
+        props.onFinish?.(values);
         return true;
       }}
     >
       <ProFormText name="postName" label="岗位名称" rules={[{ required: true }]} />
       <ProFormText name="postCode" label="岗位编码" rules={[{ required: true }]} />
-      <ProFormDigit
-        name="postSort"
-        label="显示顺序"
-        rules={[{ required: true }]}
-        fieldProps={{ min: 0, precision: 0 }}
-      />
+      <ProFormDigit name="postSort" label="显示顺序" fieldProps={{ min: 0, precision: 0 }} />
       <ProFormRadio.Group
         name="status"
-        label="岗位状态"
+        label="状态"
         initialValue={'0'}
-        // request={() =>
-        //   services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
-        //     data.map((i: any) => ({
-        //       label: i.dictLabel,
-        //       value: i.dictValue,
-        //     })),
-        //   )
-        // }
+        request={() => fetchDict('sys_normal_disable')}
       />
       <ProFormTextArea name="remark" label="备注" />
     </DrawerForm>

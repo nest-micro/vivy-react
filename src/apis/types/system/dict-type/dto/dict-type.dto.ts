@@ -1,7 +1,11 @@
 // import { Allow } from 'class-validator';
 // import { PartialType } from '@nestjs/mapped-types';
-// import { PaginateDto } from '@vivy-cloud/common-core';
 import { PaginateDto } from '@/apis/types/dto';
+
+/**
+ * 列表
+ */
+export type ListDictTypeDto = PaginateDto;
 
 /**
  * 新增
@@ -67,8 +71,3 @@ export interface UpdateDictTypeDto extends Partial<CreateDictTypeDto> {
   // @Allow()
   dictId: number;
 }
-
-/**
- * 查询搜索
- */
-export type SearchDictTypeDto = PaginateDto;

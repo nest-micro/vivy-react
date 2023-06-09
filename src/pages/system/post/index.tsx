@@ -2,10 +2,11 @@ import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useModel } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import { listPost } from '@/apis/system/post';
+import { listPost, deletePost } from '@/apis/system/post';
 import type { SysPost } from '@/apis/types/system/post';
 
 const Post = () => {
@@ -15,12 +16,31 @@ const Post = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
+   * 注册字典数据
+   */
+  const { getDict, registerDict } = useModel('dict');
+  useEffect(() => {
+    registerDict(['sys_normal_disable']);
+  }, []);
+
+  /**
+   * 删除岗位
+   * @param postIds 岗位ID
+   */
+  const handleDelete = async (postIds: React.Key) => {
+    await deletePost(postIds);
+    setSelectedRowKeys([]);
+    actionRef.current?.reload();
+  };
+
+  /**
    * @description 表格配置
    */
   const columns: ProColumns<SysPost>[] = [
     {
       title: '岗位编号',
       dataIndex: 'postId',
+      search: false,
     },
     {
       title: '岗位名称',
@@ -33,10 +53,13 @@ const Post = () => {
     {
       title: '显示顺序',
       dataIndex: 'postSort',
+      search: false,
     },
     {
       title: '状态',
       dataIndex: 'status',
+      valueType: 'select',
+      fieldProps: { options: getDict('sys_normal_disable') || [] },
       render: (_, record) => {
         return <DictTag type={'sys_normal_disable'} value={record.status} />;
       },
@@ -44,6 +67,7 @@ const Post = () => {
     {
       title: '创建时间',
       dataIndex: 'createTime',
+      search: false,
     },
     {
       title: '操作',
@@ -60,7 +84,11 @@ const Post = () => {
         >
           修改
         </Button>,
-        <Popconfirm key="delete" title="是否确认删除？">
+        <Popconfirm
+          key="delete"
+          title="是否确认删除？"
+          onConfirm={() => handleDelete(record.postId)}
+        >
           <Button type="link" danger>
             删除
           </Button>
@@ -84,7 +112,7 @@ const Post = () => {
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
           const { items, meta } = await listPost({
-            // ...params,
+            ...params,
             page: params.current,
             limit: params.pageSize,
           });
@@ -106,7 +134,12 @@ const Post = () => {
             >
               新增
             </Button>,
-            <Popconfirm key="delete" title="是否确认删除？" disabled={!selectedRowKeys.length}>
+            <Popconfirm
+              key="delete"
+              title="是否确认删除？"
+              disabled={!selectedRowKeys.length}
+              onConfirm={() => handleDelete(selectedRowKeys.join(','))}
+            >
               <Button
                 icon={<DeleteOutlined />}
                 type="primary"

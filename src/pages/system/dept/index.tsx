@@ -1,11 +1,12 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
+import { useModel } from '@umijs/max';
 import { Button, Popconfirm } from 'antd';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import { treeDept } from '@/apis/system/dept';
+import { treeDept, deleteDept } from '@/apis/system/dept';
 import type { DeptTreeVo } from '@/apis/types/system/dept';
 
 const Dept = () => {
@@ -14,7 +15,24 @@ const Dept = () => {
   const [recordData, setRecordData] = useState<Nullable<DeptTreeVo>>(null);
 
   /**
-   * @description 表格配置
+   * 注册字典数据
+   */
+  const { registerDict } = useModel('dict');
+  useEffect(() => {
+    registerDict(['sys_normal_disable']);
+  }, []);
+
+  /**
+   * 删除部门
+   * @param deptId 部门ID
+   */
+  const handleDelete = async (deptId: React.Key) => {
+    await deleteDept(deptId);
+    actionRef.current?.reload();
+  };
+
+  /**
+   * 表格列配置
    */
   const columns: ProColumns<DeptTreeVo>[] = [
     {
@@ -42,16 +60,6 @@ const Dept = () => {
       key: 'option',
       render: (_, record) => [
         <Button
-          key="add"
-          type="link"
-          onClick={() => {
-            setRecordData(record);
-            setUpdateOpen(true);
-          }}
-        >
-          新增
-        </Button>,
-        <Button
           key="edit"
           type="link"
           onClick={() => {
@@ -61,7 +69,11 @@ const Dept = () => {
         >
           修改
         </Button>,
-        <Popconfirm key="delete" title="是否确认删除？">
+        <Popconfirm
+          key="delete"
+          title="是否确认删除？"
+          onConfirm={() => handleDelete(record.deptId)}
+        >
           <Button type="link" danger>
             删除
           </Button>
@@ -78,11 +90,10 @@ const Dept = () => {
         bordered
         columns={columns}
         actionRef={actionRef}
+        search={false}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          const data = await treeDept({
-            // ...params,
-          });
+          const data = await treeDept();
           return {
             data: data,
           };

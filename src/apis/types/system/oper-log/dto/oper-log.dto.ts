@@ -1,8 +1,12 @@
-// import { Allow } from 'class-validator'
-// import { OperType, OperStatus } from '@vivy-cloud/common-logger'
-// import { PartialType } from '@nestjs/mapped-types'
-// import { PaginateDto } from '@vivy-cloud/common-core'
+// import { Allow } from 'class-validator';
+// import { OperType, OperStatus } from '@vivy-cloud/common-logger';
+// import { PartialType } from '@nestjs/mapped-types';
 import { PaginateDto } from '@/apis/types/dto';
+
+/**
+ * 列表
+ */
+export type ListOperLogDto = PaginateDto;
 
 /**
  * 新增
@@ -25,7 +29,7 @@ export interface CreateOperLogDto {
   //   comment: '操作类型(enum OperType)',
   // })
   // @Allow()
-  operType: string;
+  operType: number;
 
   // @Column({
   //   name: 'oper_name',
@@ -74,7 +78,7 @@ export interface CreateOperLogDto {
   //   comment: '操作状态(enum OperStatus)',
   // })
   // @Allow()
-  operStatus: number;
+  operStatus: string;
 
   // @Column({
   //   name: 'request_url',
@@ -139,8 +143,3 @@ export interface UpdateOperLogDto extends Partial<CreateOperLogDto> {
   // @Allow()
   operId: number;
 }
-
-/**
- * 查询搜索
- */
-export type SearchOperLogDto = PaginateDto;

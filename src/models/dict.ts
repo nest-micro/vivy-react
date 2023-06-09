@@ -2,7 +2,7 @@ import { useMap } from 'ahooks';
 import { useCallback } from 'react';
 import { isArray } from 'lodash-es';
 import { isNullOrUndef } from '@/utils/is';
-import { optionDictData } from '@/apis/system/dict-data';
+import { getDictDataList } from '@/apis/system/dict-data';
 import { SysDictData } from '@/apis/types/system/dict-data';
 
 export type DictKeys = number | number[] | string | string[];
@@ -30,7 +30,7 @@ export default () => {
       if (cache.has(type)) continue;
       try {
         cache.add(type);
-        const data = await optionDictData(type).then((data) => {
+        const data = await getDictDataList(type).then((data) => {
           return (data as DictData[]).map((item) => {
             item.label = item.dictLabel;
             item.value = item.dictValue;
@@ -50,6 +50,12 @@ export default () => {
     return data.filter((i) => convertKeys(keys).includes(i.dictValue));
   };
 
+  const fetchDict = async (type: DictType) => {
+    await registerDict([type]);
+    const data = actions.get(type) || [];
+    return data.filter((i) => i.status === '0');
+  };
+
   const removeDict = (types: DictType[]) => {
     for (const type of types) {
       cache.delete(type);
@@ -66,6 +72,7 @@ export default () => {
     dict,
     getDict: useCallback(getDict, [dict]),
     setDict: useCallback(actions.set, []),
+    fetchDict: useCallback(fetchDict, []),
     removeDict: useCallback(removeDict, []),
     reloadDict: useCallback(reloadDict, []),
     registerDict: useCallback(registerDict, []),
