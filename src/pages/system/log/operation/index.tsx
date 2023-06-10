@@ -3,12 +3,13 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm, Drawer, Descriptions } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { useModel } from '@umijs/max';
+import { useModel, Access, useAccess } from '@umijs/max';
 import { DictTag, DictText } from '@/components/Dict';
 import { listOperLog, clearOperLog } from '@/apis/system/oper-log';
 import { SysOperLog } from '@/apis/types/system/oper-log';
 
 const OperationLog = () => {
+  const { hasPermission } = useAccess();
   const actionRef = useRef<ActionType>();
   const [open, setOpen] = useState(false);
   const [recordData, setRecordData] = useState<Nullable<SysOperLog>>(null);
@@ -123,14 +124,16 @@ const OperationLog = () => {
         }}
         toolbar={{
           actions: [
-            <Popconfirm key="clean" title="是否确认清空？" onConfirm={handleClearLog}>
-              <Button icon={<DeleteOutlined />} type="primary" danger>
-                清空
-              </Button>
-            </Popconfirm>,
-            <Button key="download" icon={<DownloadOutlined />}>
-              导出
-            </Button>,
+            <Access key="clean" accessible={hasPermission(['system:operlog:remove'])}>
+              <Popconfirm title="是否确认清空？" onConfirm={handleClearLog}>
+                <Button icon={<DeleteOutlined />} type="primary" danger>
+                  清空
+                </Button>
+              </Popconfirm>
+            </Access>,
+            <Access key="download" accessible={hasPermission(['system:operlog:export'])}>
+              <Button icon={<DownloadOutlined />}>导出</Button>
+            </Access>,
           ],
         }}
       />
