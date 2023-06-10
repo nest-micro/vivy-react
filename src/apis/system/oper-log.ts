@@ -12,3 +12,12 @@ export function listOperLog(params: Partial<ListOperLogDto>) {
     params,
   });
 }
+
+/**
+ * 清空操作日志
+ */
+export function clearOperLog() {
+  return request('/system/oper/log/clear', {
+    method: RequestEnum.DELETE,
+  });
+}

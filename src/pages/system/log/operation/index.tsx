@@ -1,24 +1,42 @@
 import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
-import type { ProColumns } from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm, Drawer, Descriptions } from 'antd';
-import React, { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useModel } from '@umijs/max';
 import { DictTag, DictText } from '@/components/Dict';
-import { listOperLog } from '@/apis/system/oper-log';
+import { listOperLog, clearOperLog } from '@/apis/system/oper-log';
 import { SysOperLog } from '@/apis/types/system/oper-log';
 
 const OperationLog = () => {
+  const actionRef = useRef<ActionType>();
   const [open, setOpen] = useState(false);
   const [recordData, setRecordData] = useState<Nullable<SysOperLog>>(null);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
-   * @description 表格配置
+   * 注册字典数据
+   */
+  const { getDict, registerDict } = useModel('dict');
+  useEffect(() => {
+    registerDict(['sys_oper_type', 'sys_oper_status']);
+  }, []);
+
+  /**
+   * 清空操作日志
+   */
+  const handleClearLog = async () => {
+    await clearOperLog();
+    actionRef.current?.reload();
+  };
+
+  /**
+   * 表格列配置
    */
   const columns: ProColumns<SysOperLog>[] = [
     {
       title: '日志编号',
       dataIndex: 'operId',
+      search: false,
     },
     {
       title: '系统模块',
@@ -27,21 +45,31 @@ const OperationLog = () => {
     {
       title: '操作类型',
       dataIndex: 'operType',
+      valueType: 'select',
+      fieldProps: { options: getDict('sys_oper_type') || [] },
       render: (_, record) => {
         return <DictTag type={'sys_oper_type'} value={record.operType} />;
       },
-    },
-    {
-      title: '请求方式',
-      dataIndex: 'requestMethod',
     },
     {
       title: '操作人员',
       dataIndex: 'operName',
     },
     {
+      title: '请求方式',
+      dataIndex: 'requestMethod',
+      search: false,
+    },
+    {
+      title: '请求地址',
+      dataIndex: 'requestUrl',
+      hideInTable: true,
+    },
+    {
       title: '操作状态',
       dataIndex: 'operStatus',
+      valueType: 'select',
+      fieldProps: { options: getDict('sys_oper_status') || [] },
       render: (_, record) => {
         return <DictTag type={'sys_oper_status'} value={record.operStatus} />;
       },
@@ -49,6 +77,10 @@ const OperationLog = () => {
     {
       title: '操作日期',
       dataIndex: 'createdTime',
+      valueType: 'dateTimeRange',
+      render: (_, record) => {
+        return record.createdTime;
+      },
     },
     {
       title: '操作',
@@ -76,14 +108,11 @@ const OperationLog = () => {
         headerTitle="操作日志"
         bordered
         columns={columns}
-        rowSelection={{
-          selectedRowKeys,
-          onChange: setSelectedRowKeys,
-        }}
+        actionRef={actionRef}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
           const { items, meta } = await listOperLog({
-            // ...params,
+            ...params,
             page: params.current,
             limit: params.pageSize,
           });
@@ -94,17 +123,7 @@ const OperationLog = () => {
         }}
         toolbar={{
           actions: [
-            <Popconfirm key="delete" title="是否确认删除？" disabled={!selectedRowKeys.length}>
-              <Button
-                icon={<DeleteOutlined />}
-                type="primary"
-                danger
-                disabled={!selectedRowKeys.length}
-              >
-                删除
-              </Button>
-            </Popconfirm>,
-            <Popconfirm key="clean" title="是否确认清空？">
+            <Popconfirm key="clean" title="是否确认清空？" onConfirm={handleClearLog}>
               <Button icon={<DeleteOutlined />} type="primary" danger>
                 清空
               </Button>
