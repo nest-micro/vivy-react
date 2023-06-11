@@ -34,7 +34,7 @@ const Post = () => {
   };
 
   /**
-   * @description 表格配置
+   * 表格列配置
    */
   const columns: ProColumns<SysPost>[] = [
     {

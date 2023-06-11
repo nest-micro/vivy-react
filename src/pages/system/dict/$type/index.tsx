@@ -2,12 +2,13 @@ import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import { listDictData } from '@/apis/system/dict-data';
+import { listDictData, deleteDictData } from '@/apis/system/dict-data';
 import type { SysDictData } from '@/apis/types/system/dict-data';
+import { useModel } from '@umijs/max';
 
 const DictData = () => {
   const { type } = useParams();
@@ -17,12 +18,31 @@ const DictData = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
-   * @description 表格配置
+   * 注册字典数据
+   */
+  const { getDict, registerDict } = useModel('dict');
+  useEffect(() => {
+    registerDict(['sys_normal_disable']);
+  }, []);
+
+  /**
+   * 删除字典类型
+   * @param dictIds 字典类型ID
+   */
+  const handleDelete = async (dictIds: React.Key) => {
+    await deleteDictData(dictIds);
+    setSelectedRowKeys([]);
+    actionRef.current?.reload();
+  };
+
+  /**
+   * 表格列配置
    */
   const columns: ProColumns<SysDictData>[] = [
     {
       title: '字典编码',
       dataIndex: 'dictId',
+      search: false,
     },
     {
       title: '字典标签',
@@ -31,14 +51,18 @@ const DictData = () => {
     {
       title: '字典键值',
       dataIndex: 'dictValue',
+      search: false,
     },
     {
       title: '显示顺序',
       dataIndex: 'dictSort',
+      search: false,
     },
     {
       title: '状态',
       dataIndex: 'status',
+      valueType: 'select',
+      fieldProps: { options: getDict('sys_normal_disable') || [] },
       render: (_, record) => {
         return <DictTag type={'sys_normal_disable'} value={record.status} />;
       },
@@ -46,6 +70,7 @@ const DictData = () => {
     {
       title: '创建时间',
       dataIndex: 'createTime',
+      search: false,
     },
     {
       title: '操作',
@@ -62,7 +87,11 @@ const DictData = () => {
         >
           修改
         </Button>,
-        <Popconfirm key="delete" title="是否确认删除？">
+        <Popconfirm
+          key="delete"
+          title="是否确认删除？"
+          onConfirm={() => handleDelete(record.dictId)}
+        >
           <Button type="link" danger>
             删除
           </Button>
@@ -86,7 +115,7 @@ const DictData = () => {
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
           const { items, meta } = await listDictData({
-            // ...params,
+            ...params,
             page: params.current,
             limit: params.pageSize,
             dictType: type,
@@ -109,7 +138,12 @@ const DictData = () => {
             >
               新增
             </Button>,
-            <Popconfirm key="delete" title="是否确认删除？" disabled={!selectedRowKeys.length}>
+            <Popconfirm
+              key="delete"
+              title="是否确认删除？"
+              disabled={!selectedRowKeys.length}
+              onConfirm={() => handleDelete(selectedRowKeys.join(','))}
+            >
               <Button
                 icon={<DeleteOutlined />}
                 type="primary"
