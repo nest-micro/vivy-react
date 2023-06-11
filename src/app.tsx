@@ -75,7 +75,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 
   return {
     avatarProps: {
-      src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
+      src:
+        user.avatar ||
+        'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
       title: <AvatarName name={user.nickName} />,
       render: (_, children) => {
         return <AvatarDropdown>{children}</AvatarDropdown>;

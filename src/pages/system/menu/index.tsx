@@ -5,7 +5,7 @@ import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
-import { treeMenu } from '@/apis/system/menu';
+import { treeMenu, deleteMenu } from '@/apis/system/menu';
 import type { MenuTreeVo } from '@/apis/types/system/menu';
 
 const Menu = () => {
@@ -14,7 +14,16 @@ const Menu = () => {
   const [recordData, setRecordData] = useState<Nullable<MenuTreeVo>>(null);
 
   /**
-   * @description 表格配置
+   * 删除部门
+   * @param deptId 部门ID
+   */
+  const handleDelete = async (deptId: React.Key) => {
+    await deleteMenu(deptId);
+    actionRef.current?.reload();
+  };
+
+  /**
+   * 表格列配置
    */
   const columns: ProColumns<MenuTreeVo>[] = [
     {
@@ -27,11 +36,11 @@ const Menu = () => {
     },
     {
       title: '菜单排序',
-      dataIndex: 'orderNum',
+      dataIndex: 'menuSort',
     },
     {
       title: '权限标识',
-      dataIndex: 'perms',
+      dataIndex: 'permission',
     },
     {
       title: '组件路径',
@@ -54,16 +63,6 @@ const Menu = () => {
       key: 'option',
       render: (_, record) => [
         <Button
-          key="add"
-          type="link"
-          onClick={() => {
-            setRecordData(record);
-            setUpdateOpen(true);
-          }}
-        >
-          新增
-        </Button>,
-        <Button
           key="edit"
           type="link"
           onClick={() => {
@@ -73,7 +72,11 @@ const Menu = () => {
         >
           修改
         </Button>,
-        <Popconfirm key="delete" title="是否确认删除？">
+        <Popconfirm
+          key="delete"
+          title="是否确认删除？"
+          onConfirm={() => handleDelete(record.menuId)}
+        >
           <Button type="link" danger>
             删除
           </Button>
@@ -88,13 +91,12 @@ const Menu = () => {
         rowKey="menuId"
         headerTitle="菜单列表"
         bordered
+        search={false}
         columns={columns}
         actionRef={actionRef}
         request={async (params, sort, filter) => {
           console.log(params, sort, filter);
-          const data = await treeMenu({
-            // ...params,
-          });
+          const data = await treeMenu();
           return {
             data: data,
           };

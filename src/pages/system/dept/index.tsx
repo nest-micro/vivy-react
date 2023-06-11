@@ -1,9 +1,8 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { useModel } from '@umijs/max';
 import { Button, Popconfirm } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
 import { treeDept, deleteDept } from '@/apis/system/dept';
@@ -13,14 +12,6 @@ const Dept = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [recordData, setRecordData] = useState<Nullable<DeptTreeVo>>(null);
-
-  /**
-   * 注册字典数据
-   */
-  const { registerDict } = useModel('dict');
-  useEffect(() => {
-    registerDict(['sys_normal_disable']);
-  }, []);
 
   /**
    * 删除部门

@@ -10,11 +10,13 @@ import {
 } from '@ant-design/pro-components';
 import { AppstoreOutlined } from '@ant-design/icons';
 import { useRef, useEffect } from 'react';
+import { useModel } from '@umijs/max';
 import { IconPicker } from '@/components/Icon';
+import { addMenu, updateMenu, infoMenu, selectableMenu } from '@/apis/system/menu';
 import type { MenuTreeVo } from '@/apis/types/system/menu';
 
-export type MenuType = { label: string; value: 'M' | 'C' | 'F' };
-export const menuTypeOptions: MenuType[] = [
+type MenuType = { label: string; value: 'M' | 'C' | 'F' };
+const menuTypeOptions: MenuType[] = [
   { label: '目录', value: 'M' },
   { label: '菜单', value: 'C' },
   { label: '按钮', value: 'F' },
@@ -26,14 +28,35 @@ interface UpdateFormProps extends DrawerFormProps {
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
   const formRef = useRef<ProFormInstance>();
+  const { fetchDict } = useModel('dict');
 
   /**
-   * @description 获取初始化数据
+   * 获取初始化数据
    */
   useEffect(() => {
     formRef.current?.resetFields();
-    formRef.current?.setFieldsValue(record);
+    if (record) {
+      infoMenu(record.menuId).then((info) => {
+        formRef.current?.setFieldsValue(info);
+      });
+    }
   }, [record]);
+
+  /**
+   * 提交表单
+   * @param values 表单值
+   */
+  const handleSubmit = async (values: Recordable) => {
+    if (record) {
+      await updateMenu({
+        ...values,
+        menuId: record.menuId,
+      });
+    } else {
+      await addMenu(values);
+    }
+    formRef.current?.resetFields();
+  };
 
   return (
     <DrawerForm
@@ -42,20 +65,19 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       labelCol={{ flex: '100px' }}
       formRef={formRef}
       title={record ? `更新菜单-${record.menuName}` : `新增菜单`}
-      onFinish={async (formData) => {
-        props.onFinish?.(formData);
-        console.log(formData);
+      onFinish={async (values) => {
+        await handleSubmit(values);
+        props.onFinish?.(values);
         return true;
       }}
     >
       <ProFormTreeSelect
         name="parentId"
         label="上级菜单"
-        rules={[{ required: true }]}
+        request={selectableMenu}
         fieldProps={{
           fieldNames: { label: 'menuName', value: 'menuId' },
         }}
-        // request={() => services.SystemController.listMenu({}).then(({ data }) => data)}
       />
       <ProFormRadio.Group
         name="menuType"
@@ -66,12 +88,13 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
           options: menuTypeOptions,
         }}
       />
+      <ProFormText name="menuName" label="菜单名称" rules={[{ required: true }]} />
+      <ProFormDigit name="menuSort" label="显示排序" fieldProps={{ min: 0, precision: 0 }} />
       <ProFormDependency name={['menuType']}>
         {({ menuType }: Record<string, MenuType['value']>) => (
           <>
-            <ProFormText name="menuName" label="菜单名称" rules={[{ required: true }]} />
-            <ProFormDigit name="orderNum" label="显示排序" fieldProps={{ min: 0, precision: 0 }} />
-            {menuType !== 'F' ? (
+            {/* 目录、菜单 */}
+            {menuType === 'M' || menuType === 'C' ? (
               <ProFormText
                 name="icon"
                 label="菜单图标"
@@ -88,95 +111,87 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
                 }}
               />
             ) : null}
-            {menuType !== 'F' ? (
-              <ProFormRadio.Group
-                name="isFrame"
-                label="是否外链"
-                tooltip="选择是外链则路由地址需要以`http(s)://`开头"
-                fieldProps={{
-                  options: [
-                    { label: '是', value: '0' },
-                    { label: '否', value: '1' },
-                  ],
-                }}
-              />
-            ) : null}
-            {menuType !== 'F' ? (
+            {/* 目录、菜单 */}
+            {menuType === 'M' || menuType === 'C' ? (
               <ProFormText
                 name="path"
                 label="路由地址"
                 tooltip="访问的路由地址，如：`user`，如外网地址需内链访问则以`http(s)://`开头"
               />
             ) : null}
+            {/* 菜单 */}
             {menuType === 'C' ? (
               <ProFormText
                 name="component"
                 label="组件路径"
-                tooltip="访问的组件路径，如：`system/user/index`，默认在`views`目录下"
+                tooltip="访问的组件路径，如：`system/user/index`，默认在`pages`目录下"
               />
             ) : null}
-            {menuType !== 'M' ? (
-              <ProFormText
-                name="perms"
-                label="权限字符"
-                tooltip="控制器中定义的权限字符，如：@PreAuthorize(`@ss.hasPermi('system:user:list')`)"
-              />
-            ) : null}
+            {/* 菜单 */}
             {menuType === 'C' ? (
               <ProFormText
                 name="query"
                 label="路由参数"
-                tooltip='访问路由的默认传递参数，如：`{"id": 1, "name": "ry"}`'
+                tooltip='访问路由的默认传递参数，如：`{"id": 1, "name": "vivy"}`'
               />
             ) : null}
+            {/* 菜单、按钮 */}
+            {menuType === 'C' || menuType === 'F' ? (
+              <ProFormText
+                name="permission"
+                label="权限字符"
+                tooltip="控制器中定义的权限字符，如：@RequirePermissions('system:operlog:remove')"
+              />
+            ) : null}
+            {/* 目录、菜单 */}
+            {menuType === 'M' || menuType === 'C' ? (
+              <ProFormRadio.Group
+                name="isVisible"
+                label="是否显示"
+                tooltip="选择隐藏则路由将不会出现在侧边栏，但仍然可以访问"
+                initialValue={'0'}
+                request={() => fetchDict('sys_yes_no')}
+              />
+            ) : null}
+            {/* 菜单 */}
+            {menuType === 'C' ? (
+              <ProFormRadio.Group
+                name="isLink"
+                label="是否外链"
+                tooltip="选择是外链则路由地址需要以`http(s)://`开头"
+                initialValue={'1'}
+                request={() => fetchDict('sys_yes_no')}
+              />
+            ) : null}
+            {/* 菜单 */}
+            {menuType === 'C' ? (
+              <ProFormRadio.Group
+                name="isFrame"
+                label="是否内嵌"
+                tooltip="选择是内嵌则路由地址需要以`http(s)://`开头"
+                initialValue={'1'}
+                request={() => fetchDict('sys_yes_no')}
+              />
+            ) : null}
+            {/* 菜单 */}
             {menuType === 'C' ? (
               <ProFormRadio.Group
                 name="isCache"
                 label="是否缓存"
                 tooltip="选择是则会被`keep-alive`缓存，需要匹配组件的`name`和地址保持一致"
                 initialValue={'1'}
-                fieldProps={{
-                  options: [
-                    { label: '缓存', value: '0' },
-                    { label: '不缓存', value: '1' },
-                  ],
-                }}
-              />
-            ) : null}
-            {menuType !== 'F' ? (
-              <ProFormRadio.Group
-                name="visible"
-                label="显示状态"
-                tooltip="选择隐藏则路由将不会出现在侧边栏，但仍然可以访问"
-                initialValue={'0'}
-                // request={() =>
-                //   services.SystemController.getDict('sys_show_hide').then(({ data }) =>
-                //     data.map((i: any) => ({
-                //       label: i.dictLabel,
-                //       value: i.dictValue,
-                //     })),
-                //   )
-                // }
-              />
-            ) : null}
-            {menuType !== 'F' ? (
-              <ProFormRadio.Group
-                name="status"
-                label="菜单状态"
-                initialValue={'0'}
-                // request={() =>
-                //   services.SystemController.getDict('sys_normal_disable').then(({ data }) =>
-                //     data.map((i: any) => ({
-                //       label: i.dictLabel,
-                //       value: i.dictValue,
-                //     })),
-                //   )
-                // }
+                request={() => fetchDict('sys_yes_no')}
               />
             ) : null}
           </>
         )}
       </ProFormDependency>
+      <ProFormRadio.Group
+        name="status"
+        label="状态"
+        initialValue={'0'}
+        request={() => fetchDict('sys_normal_disable')}
+      />
     </DrawerForm>
   );
 };

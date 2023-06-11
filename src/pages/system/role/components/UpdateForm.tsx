@@ -8,6 +8,7 @@ import {
   ProFormRadio,
   ProFormTextArea,
 } from '@ant-design/pro-components';
+import { TreeSelect } from 'antd';
 import { useRef, useEffect } from 'react';
 import { useModel } from '@umijs/max';
 import { treeMenu } from '@/apis/system/menu';
@@ -78,7 +79,10 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
         request={treeMenu}
         fieldProps={{
           fieldNames: { label: 'menuName', value: 'menuId' },
+          maxTagCount: 3,
           treeCheckable: true,
+          treeCheckStrictly: true,
+          showCheckedStrategy: TreeSelect.SHOW_ALL,
         }}
       />
       <ProFormTextArea name="remark" label="备注" />
