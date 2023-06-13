@@ -1,12 +1,10 @@
-import { useModel } from '@umijs/max';
-import { memo, useEffect, useMemo } from 'react';
+import { memo } from 'react';
 import { Tag } from 'antd';
-import { DictKeys } from '@/models/dict';
-import { isNullOrUndef } from '@/utils/is';
+import { DictKeys, DictData, convertKeys } from '@/models/dict';
 
 type DictProps = {
-  type: DictType;
   value: DictKeys;
+  options: DictData[];
 };
 
 const getColor = (color: string) => {
@@ -18,16 +16,10 @@ const getColor = (color: string) => {
   return color;
 };
 
-const DictTag: React.FC<DictProps> = ({ type, value }) => {
-  const { getDict, registerDict } = useModel('dict');
-
-  useEffect(() => {
-    registerDict([type]);
-  }, [type]);
-
-  const data = useMemo(() => {
-    return getDict(type, isNullOrUndef(value) ? [] : value);
-  }, [type, value, getDict]);
+const DictTag: React.FC<DictProps> = ({ value, options }) => {
+  const data = options.filter((i) => {
+    return convertKeys(value).includes(i.dictValue);
+  });
 
   return (
     <span>

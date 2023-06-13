@@ -22,7 +22,13 @@ interface UpdateFormProps extends DrawerFormProps {
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
   const formRef = useRef<ProFormInstance>();
-  const { fetchDict } = useModel('dict');
+
+  /**
+   * 注册字典数据
+   */
+  const { selectDict } = useModel('dict');
+  const sysUserSex = selectDict('sys_user_sex');
+  const sysNormalDisable = selectDict('sys_normal_disable');
 
   /**
    * 获取初始化数据
@@ -88,12 +94,12 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       />
       <ProFormText name="phonenumber" label="手机号码" />
       <ProFormText name="email" label="邮箱" />
-      <ProFormSelect name="sex" label="用户性别" request={() => fetchDict('sys_user_sex')} />
+      <ProFormSelect name="sex" label="用户性别" fieldProps={{ options: sysUserSex }} />
       <ProFormRadio.Group
         name="status"
         label="状态"
         initialValue={'0'}
-        request={() => fetchDict('sys_normal_disable')}
+        fieldProps={{ options: sysNormalDisable }}
       />
       <ProFormSelect
         name="roleIds"

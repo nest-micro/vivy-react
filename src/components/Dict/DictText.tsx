@@ -1,24 +1,16 @@
-import { useModel } from '@umijs/max';
-import { memo, useEffect, useMemo } from 'react';
-import { DictKeys } from '@/models/dict';
-import { isNullOrUndef } from '@/utils/is';
+import { memo } from 'react';
+import { DictKeys, DictData, convertKeys } from '@/models/dict';
 
 type DictProps = {
-  type: DictType;
   value: DictKeys;
+  options: DictData[];
   separator?: string;
 };
 
-const DictText: React.FC<DictProps> = ({ type, value, separator = ',' }) => {
-  const { getDict, registerDict } = useModel('dict');
-
-  useEffect(() => {
-    registerDict([type]);
-  }, [type]);
-
-  const data = useMemo(() => {
-    return getDict(type, isNullOrUndef(value) ? [] : value);
-  }, [type, value, getDict]);
+const DictText: React.FC<DictProps> = ({ value, options, separator = ',' }) => {
+  const data = options.filter((i) => {
+    return convertKeys(value).includes(i.dictValue);
+  });
 
   return <span>{data.map((d) => d.dictLabel).join(separator)}</span>;
 };

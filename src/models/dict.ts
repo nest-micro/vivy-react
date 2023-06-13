@@ -13,7 +13,7 @@ export type DictData = SysDictData & {
 
 const cache = new Set<DictType>();
 
-const convertKeys = (keys?: DictKeys) => {
+export const convertKeys = (keys?: DictKeys) => {
   if (isNullOrUndef(keys)) return [];
   if (isArray(keys)) {
     return keys.map((k) => k.toString());
@@ -22,59 +22,78 @@ const convertKeys = (keys?: DictKeys) => {
   }
 };
 
+export const getDictData = async (type: DictType) => {
+  return getDictDataList(type).then((data) => {
+    return (data as DictData[]).map((item) => {
+      item.label = item.dictLabel;
+      item.value = item.dictValue;
+      return item;
+    });
+  });
+};
+
 export default () => {
   const [dict, actions] = useMap<DictType, DictData[]>();
 
-  const registerDict = async (types: DictType[]) => {
-    for (const type of types) {
-      if (cache.has(type)) continue;
-      try {
-        cache.add(type);
-        const data = await getDictDataList(type).then((data) => {
-          return (data as DictData[]).map((item) => {
-            item.label = item.dictLabel;
-            item.value = item.dictValue;
-            return item;
-          });
+  /**
+   * 加载字典列表
+   * @param type 字典类型
+   */
+  const loadDict = (type: DictType) => {
+    if (!cache.has(type)) {
+      cache.add(type);
+      getDictData(type)
+        .then((data) => {
+          cache.add(type);
+          actions.set(type, data);
+        })
+        .catch(() => {
+          cache.delete(type);
         });
-        actions.set(type, data);
-      } catch (error) {
-        cache.delete(type);
-      }
     }
+
+    return actions.get(type) || [];
   };
 
-  const getDict = (type: DictType, keys?: DictKeys) => {
-    const data = actions.get(type) || [];
-    if (isNullOrUndef(keys)) return data;
-    return data.filter((i) => convertKeys(keys).includes(i.dictValue));
+  /**
+   * 可用于选择的字典列表
+   * @param type 字典类型
+   */
+  const selectDict = (type: DictType) => {
+    loadDict(type);
+    return (actions.get(type) || []).filter((i) => i.status === '0');
   };
 
-  const fetchDict = async (type: DictType) => {
-    await registerDict([type]);
-    const data = actions.get(type) || [];
+  /**
+   * 重新加载字典
+   * @param type 字典类型
+   */
+  const reloadDict = (type: DictType) => {
+    cache.delete(type);
+    loadDict(type);
+    return actions.get(type) || [];
+  };
+
+  /**
+   * 转化为下拉选项
+   */
+  const toSelect = (data: DictData[]) => {
     return data.filter((i) => i.status === '0');
   };
 
-  const removeDict = (types: DictType[]) => {
-    for (const type of types) {
-      cache.delete(type);
-      actions.remove(type);
-    }
-  };
-
-  const reloadDict = (types: DictType[]) => {
-    removeDict(types);
-    registerDict(types);
+  /**
+   * 转化为枚举选项
+   */
+  const toMapEnum = (data: DictData[]) => {
+    return new Map(toSelect(data).map((i) => [i.value, i.label]));
   };
 
   return {
     dict,
-    getDict: useCallback(getDict, [dict]),
-    setDict: useCallback(actions.set, []),
-    fetchDict: useCallback(fetchDict, []),
-    removeDict: useCallback(removeDict, []),
+    loadDict: useCallback(loadDict, [dict]),
+    selectDict: useCallback(selectDict, [dict]),
     reloadDict: useCallback(reloadDict, []),
-    registerDict: useCallback(registerDict, []),
+    toSelect: useCallback(toSelect, []),
+    toMapEnum: useCallback(toMapEnum, []),
   };
 };

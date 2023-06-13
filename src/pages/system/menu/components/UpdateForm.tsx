@@ -28,7 +28,13 @@ interface UpdateFormProps extends DrawerFormProps {
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
   const formRef = useRef<ProFormInstance>();
-  const { fetchDict } = useModel('dict');
+
+  /**
+   * 注册字典数据
+   */
+  const { selectDict } = useModel('dict');
+  const sysYesNo = selectDict('sys_yes_no');
+  const sysNormalDisable = selectDict('sys_normal_disable');
 
   /**
    * 获取初始化数据
@@ -37,7 +43,10 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
     formRef.current?.resetFields();
     if (record) {
       infoMenu(record.menuId).then((info) => {
-        formRef.current?.setFieldsValue(info);
+        formRef.current?.setFieldsValue({
+          ...info,
+          parentId: info.parentId || undefined,
+        });
       });
     }
   }, [record]);
@@ -150,7 +159,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
                 label="是否显示"
                 tooltip="选择隐藏则路由将不会出现在侧边栏，但仍然可以访问"
                 initialValue={'0'}
-                request={() => fetchDict('sys_yes_no')}
+                fieldProps={{ options: sysYesNo }}
               />
             ) : null}
             {/* 菜单 */}
@@ -160,7 +169,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
                 label="是否外链"
                 tooltip="选择是外链则路由地址需要以`http(s)://`开头"
                 initialValue={'1'}
-                request={() => fetchDict('sys_yes_no')}
+                fieldProps={{ options: sysYesNo }}
               />
             ) : null}
             {/* 菜单 */}
@@ -170,7 +179,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
                 label="是否内嵌"
                 tooltip="选择是内嵌则路由地址需要以`http(s)://`开头"
                 initialValue={'1'}
-                request={() => fetchDict('sys_yes_no')}
+                fieldProps={{ options: sysYesNo }}
               />
             ) : null}
             {/* 菜单 */}
@@ -180,7 +189,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
                 label="是否缓存"
                 tooltip="选择是则会被`keep-alive`缓存，需要匹配组件的`name`和地址保持一致"
                 initialValue={'1'}
-                request={() => fetchDict('sys_yes_no')}
+                fieldProps={{ options: sysYesNo }}
               />
             ) : null}
           </>
@@ -190,7 +199,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
         name="status"
         label="状态"
         initialValue={'0'}
-        request={() => fetchDict('sys_normal_disable')}
+        fieldProps={{ options: sysNormalDisable }}
       />
     </DrawerForm>
   );

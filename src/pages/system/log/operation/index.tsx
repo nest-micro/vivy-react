@@ -2,7 +2,7 @@ import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm, Drawer, Descriptions } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useModel, Access, useAccess } from '@umijs/max';
 import { DictTag, DictText } from '@/components/Dict';
 import { listOperLog, clearOperLog } from '@/apis/system/oper-log';
@@ -17,10 +17,9 @@ const OperationLog = () => {
   /**
    * 注册字典数据
    */
-  const { getDict, registerDict } = useModel('dict');
-  useEffect(() => {
-    registerDict(['sys_oper_type', 'sys_oper_status']);
-  }, []);
+  const { loadDict, toSelect } = useModel('dict');
+  const sysOperType = loadDict('sys_oper_type');
+  const sysOperStatus = loadDict('sys_oper_status');
 
   /**
    * 清空操作日志
@@ -47,9 +46,9 @@ const OperationLog = () => {
       title: '操作类型',
       dataIndex: 'operType',
       valueType: 'select',
-      fieldProps: { options: getDict('sys_oper_type') || [] },
+      fieldProps: { options: toSelect(sysOperType) },
       render: (_, record) => {
-        return <DictTag type={'sys_oper_type'} value={record.operType} />;
+        return <DictTag options={sysOperType} value={record.operType} />;
       },
     },
     {
@@ -70,9 +69,9 @@ const OperationLog = () => {
       title: '操作状态',
       dataIndex: 'operStatus',
       valueType: 'select',
-      fieldProps: { options: getDict('sys_oper_status') || [] },
+      fieldProps: { options: toSelect(sysOperStatus) },
       render: (_, record) => {
-        return <DictTag type={'sys_oper_status'} value={record.operStatus} />;
+        return <DictTag options={sysOperStatus} value={record.operStatus} />;
       },
     },
     {
@@ -137,7 +136,7 @@ const OperationLog = () => {
         {recordData ? (
           <Descriptions column={2}>
             <Descriptions.Item label="操作模块">
-              {recordData.title} / <DictText type={'sys_oper_type'} value={recordData.operType} />
+              {recordData.title} / <DictText options={sysOperType} value={recordData.operType} />
             </Descriptions.Item>
             <Descriptions.Item label="登录信息">
               {recordData.operName} / {recordData.operIp} / {recordData.operLocation}
@@ -157,7 +156,7 @@ const OperationLog = () => {
               {recordData.requestErrmsg}
             </Descriptions.Item>
             <Descriptions.Item label="操作状态" span={2}>
-              <DictText type={'sys_oper_status'} value={recordData.operStatus} />
+              <DictText options={sysOperStatus} value={recordData.operStatus} />
             </Descriptions.Item>
             <Descriptions.Item label="操作时间">{recordData.createdTime}</Descriptions.Item>
           </Descriptions>

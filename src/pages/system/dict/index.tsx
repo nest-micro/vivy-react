@@ -2,7 +2,7 @@ import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useModel, Access, useAccess } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
@@ -19,10 +19,8 @@ const DictType = () => {
   /**
    * 注册字典数据
    */
-  const { getDict, registerDict } = useModel('dict');
-  useEffect(() => {
-    registerDict(['sys_normal_disable']);
-  }, []);
+  const { loadDict, toSelect } = useModel('dict');
+  const sysNormalDisable = loadDict('sys_normal_disable');
 
   /**
    * 删除字典类型
@@ -63,9 +61,9 @@ const DictType = () => {
       title: '状态',
       dataIndex: 'status',
       valueType: 'select',
-      fieldProps: { options: getDict('sys_normal_disable') || [] },
+      fieldProps: { options: toSelect(sysNormalDisable) },
       render: (_, record) => {
-        return <DictTag type={'sys_normal_disable'} value={record.status} />;
+        return <DictTag options={sysNormalDisable} value={record.status} />;
       },
     },
     {

@@ -5,7 +5,7 @@ import type { TreeProps, TreeDataNode } from 'antd';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { useRequest, useModel, Access, useAccess } from '@umijs/max';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Logical } from '@/access';
 import { eachTree } from '@/utils/tree';
 import { DictTag } from '@/components/Dict';
@@ -27,10 +27,8 @@ const User = () => {
   /**
    * 注册字典数据
    */
-  const { getDict, registerDict } = useModel('dict');
-  useEffect(() => {
-    registerDict(['sys_normal_disable']);
-  }, []);
+  const { loadDict, toSelect } = useModel('dict');
+  const sysNormalDisable = loadDict('sys_normal_disable');
 
   /**
    * 部门树选择
@@ -89,9 +87,9 @@ const User = () => {
       title: '状态',
       dataIndex: 'status',
       valueType: 'select',
-      fieldProps: { options: getDict('sys_normal_disable') || [] },
+      fieldProps: { options: toSelect(sysNormalDisable) },
       render: (_, record) => {
-        return <DictTag type={'sys_normal_disable'} value={record.status} />;
+        return <DictTag options={sysNormalDisable} value={record.status} />;
       },
     },
     {

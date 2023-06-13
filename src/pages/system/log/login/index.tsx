@@ -2,7 +2,7 @@ import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useModel, Access, useAccess } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import { listLoginLog, clearLoginLog } from '@/apis/system/login-log';
@@ -15,10 +15,8 @@ const LoginLog = () => {
   /**
    * 注册字典数据
    */
-  const { getDict, registerDict } = useModel('dict');
-  useEffect(() => {
-    registerDict(['sys_oper_status']);
-  }, []);
+  const { loadDict, toSelect } = useModel('dict');
+  const sysOperStatus = loadDict('sys_oper_status');
 
   /**
    * 清空登录日志
@@ -65,9 +63,9 @@ const LoginLog = () => {
       title: '登录状态',
       dataIndex: 'loginStatus',
       valueType: 'select',
-      fieldProps: { options: getDict('sys_oper_status') || [] },
+      fieldProps: { options: toSelect(sysOperStatus) },
       render: (_, record) => {
-        return <DictTag type={'sys_oper_status'} value={record.loginStatus} />;
+        return <DictTag options={sysOperStatus} value={record.loginStatus} />;
       },
     },
     {

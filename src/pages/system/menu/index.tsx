@@ -4,7 +4,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
-import { Access, useAccess } from '@umijs/max';
+import { useModel, Access, useAccess } from '@umijs/max';
 import { eachTree } from '@/utils/tree';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
@@ -16,6 +16,12 @@ const Menu = () => {
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [recordData, setRecordData] = useState<Nullable<MenuTreeVo>>(null);
+
+  /**
+   * 注册字典数据
+   */
+  const { loadDict } = useModel('dict');
+  const sysNormalDisable = loadDict('sys_normal_disable');
 
   /**
    * 删除部门
@@ -54,7 +60,7 @@ const Menu = () => {
       title: '状态',
       dataIndex: 'status',
       render: (_, record) => {
-        return <DictTag type={'sys_normal_disable'} value={record.status} />;
+        return <DictTag options={sysNormalDisable} value={record.status} />;
       },
     },
     {

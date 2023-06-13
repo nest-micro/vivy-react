@@ -21,7 +21,12 @@ interface UpdateFormProps extends DrawerFormProps {
 
 const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
   const formRef = useRef<ProFormInstance>();
-  const { fetchDict } = useModel('dict');
+
+  /**
+   * 注册字典数据
+   */
+  const { selectDict } = useModel('dict');
+  const sysNormalDisable = selectDict('sys_normal_disable');
 
   /**
    * 获取初始化数据
@@ -78,7 +83,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
         name="status"
         label="状态"
         initialValue={'0'}
-        request={() => fetchDict('sys_normal_disable')}
+        fieldProps={{ options: sysNormalDisable }}
       />
       <ProFormTreeSelect
         name="menuIds"
