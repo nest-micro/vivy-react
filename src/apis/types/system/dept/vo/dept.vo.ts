@@ -5,5 +5,5 @@ import { SysDept } from '../sys-dept.entity';
  */
 export interface DeptTreeVo extends SysDept {
   /** 子节点 */
-  children: DeptTreeVo[];
+  children?: DeptTreeVo[];
 }

@@ -1,4 +1,4 @@
-import { DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
@@ -87,8 +87,7 @@ const LoginLog = () => {
       bordered
       columns={columns}
       actionRef={actionRef}
-      request={async (params, sort, filter) => {
-        console.log(params, sort, filter);
+      request={async (params) => {
         const { items, meta } = await listLoginLog({
           ...params,
           page: params.current,
@@ -101,15 +100,12 @@ const LoginLog = () => {
       }}
       toolbar={{
         actions: [
-          <Access key="clean" accessible={hasPermission(['system:operlog:remove'])}>
+          <Access key="clean" accessible={hasPermission('system:loginlog:delete')}>
             <Popconfirm title="是否确认清空？" onConfirm={handleClearLog}>
               <Button icon={<DeleteOutlined />} type="primary" danger>
                 清空
               </Button>
             </Popconfirm>
-          </Access>,
-          <Access key="download" accessible={hasPermission(['system:operlog:export'])}>
-            <Button icon={<DownloadOutlined />}>导出</Button>
           </Access>,
         ],
       }}

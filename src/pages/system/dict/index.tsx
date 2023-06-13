@@ -3,13 +3,14 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useModel } from '@umijs/max';
+import { Link, useModel, Access, useAccess } from '@umijs/max';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
 import { listDictType, deleteDictType } from '@/apis/system/dict-type';
 import type { SysDictType } from '@/apis/types/system/dict-type';
 
 const DictType = () => {
+  const { hasPermission } = useAccess();
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [recordData, setRecordData] = useState<Nullable<SysDictType>>(null);
@@ -77,25 +78,24 @@ const DictType = () => {
       valueType: 'option',
       key: 'option',
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          onClick={() => {
-            setRecordData(record);
-            setUpdateOpen(true);
-          }}
-        >
-          修改
-        </Button>,
-        <Popconfirm
-          key="delete"
-          title="是否确认删除？"
-          onConfirm={() => handleDelete(record.dictId)}
-        >
-          <Button type="link" danger>
-            删除
+        <Access key="update" accessible={hasPermission('system:dict:update')}>
+          <Button
+            type="link"
+            onClick={() => {
+              setRecordData(record);
+              setUpdateOpen(true);
+            }}
+          >
+            编辑
           </Button>
-        </Popconfirm>,
+        </Access>,
+        <Access key="delete" accessible={hasPermission('system:dict:delete')}>
+          <Popconfirm title="是否确认删除？" onConfirm={() => handleDelete(record.dictId)}>
+            <Button type="link" danger>
+              删除
+            </Button>
+          </Popconfirm>
+        </Access>,
       ],
     },
   ];
@@ -112,8 +112,7 @@ const DictType = () => {
           selectedRowKeys,
           onChange: setSelectedRowKeys,
         }}
-        request={async (params, sort, filter) => {
-          console.log(params, sort, filter);
+        request={async (params) => {
           const { items, meta } = await listDictType({
             ...params,
             page: params.current,
@@ -126,32 +125,34 @@ const DictType = () => {
         }}
         toolbar={{
           actions: [
-            <Button
-              key="add"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setRecordData(null);
-                setUpdateOpen(true);
-              }}
-            >
-              新增
-            </Button>,
-            <Popconfirm
-              key="delete"
-              title="是否确认删除？"
-              disabled={!selectedRowKeys.length}
-              onConfirm={() => handleDelete(selectedRowKeys.join(','))}
-            >
+            <Access key="add" accessible={hasPermission('system:dict:add')}>
               <Button
-                icon={<DeleteOutlined />}
                 type="primary"
-                danger
-                disabled={!selectedRowKeys.length}
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setRecordData(null);
+                  setUpdateOpen(true);
+                }}
               >
-                删除
+                新增
               </Button>
-            </Popconfirm>,
+            </Access>,
+            <Access key="delete" accessible={hasPermission('system:dict:delete')}>
+              <Popconfirm
+                title="是否确认删除？"
+                disabled={!selectedRowKeys.length}
+                onConfirm={() => handleDelete(selectedRowKeys.join(','))}
+              >
+                <Button
+                  icon={<DeleteOutlined />}
+                  type="primary"
+                  danger
+                  disabled={!selectedRowKeys.length}
+                >
+                  删除
+                </Button>
+              </Popconfirm>
+            </Access>,
           ],
         }}
       />

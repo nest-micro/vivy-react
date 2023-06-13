@@ -60,7 +60,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       layout="horizontal"
       labelCol={{ flex: '100px' }}
       formRef={formRef}
-      title={record ? `更新字典-${record.dictLabel}` : `新增字典`}
+      title={record ? `编辑字典-${record.dictLabel}` : `新增字典`}
       onFinish={async (values) => {
         await handleSubmit(values);
         props.onFinish?.(values);

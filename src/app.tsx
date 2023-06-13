@@ -2,7 +2,7 @@ import { history } from '@umijs/max';
 import type { RunTimeLayoutConfig, RequestConfig } from '@umijs/max';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { QuestionCircleOutlined, GithubOutlined } from '@ant-design/icons';
+import { GithubOutlined } from '@ant-design/icons';
 import { message as Message, Modal } from 'antd';
 import defaultSettings from '../config/setting';
 import { AvatarName, AvatarDropdown } from '@/components/Layout';
@@ -75,17 +75,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 
   return {
     avatarProps: {
-      src:
-        user.avatar ||
-        'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
+      src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
       title: <AvatarName name={user.nickName} />,
       render: (_, children) => {
         return <AvatarDropdown>{children}</AvatarDropdown>;
       },
     },
-    // waterMarkProps: {
-    //   content: initialState?.settings?.title as string,
-    // },
     bgLayoutImgList: [
       {
         src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr',
@@ -107,7 +102,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       },
     ],
     actionsRender: () => {
-      return [<QuestionCircleOutlined key="doc" />, <GithubOutlined key="github" />];
+      return [
+        <GithubOutlined
+          key="github"
+          onClick={() => {
+            window.open('https://github.com/nest-micro/vivy-react');
+          }}
+        />,
+      ];
     },
     // footerRender: () => {
     //   return <Footer />;

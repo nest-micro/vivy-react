@@ -1,14 +1,18 @@
+import { isEmpty } from 'lodash-es';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { Access, useAccess } from '@umijs/max';
+import { eachTree } from '@/utils/tree';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
 import { treeDept, deleteDept } from '@/apis/system/dept';
 import type { DeptTreeVo } from '@/apis/types/system/dept';
 
 const Dept = () => {
+  const { hasPermission } = useAccess();
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [recordData, setRecordData] = useState<Nullable<DeptTreeVo>>(null);
@@ -20,6 +24,25 @@ const Dept = () => {
   const handleDelete = async (deptId: React.Key) => {
     await deleteDept(deptId);
     actionRef.current?.reload();
+  };
+
+  /**
+   * 处理默认展开
+   * @param data 列数据
+   */
+  const [expandedRowKeys, setExpandedRowKeys] = useState<readonly React.Key[]>([]);
+  const handleExpandedRows = (data: DeptTreeVo[]) => {
+    const keys: React.Key[] = [];
+    eachTree<DeptTreeVo>(data, (item) => {
+      if (isEmpty(item.children)) {
+        item.children = undefined;
+      } else if (isEmpty(expandedRowKeys)) {
+        keys.push(item.deptId);
+      }
+    });
+    if (isEmpty(expandedRowKeys)) {
+      setExpandedRowKeys(keys);
+    }
   };
 
   /**
@@ -50,25 +73,24 @@ const Dept = () => {
       valueType: 'option',
       key: 'option',
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          onClick={() => {
-            setRecordData(record);
-            setUpdateOpen(true);
-          }}
-        >
-          修改
-        </Button>,
-        <Popconfirm
-          key="delete"
-          title="是否确认删除？"
-          onConfirm={() => handleDelete(record.deptId)}
-        >
-          <Button type="link" danger>
-            删除
+        <Access key="update" accessible={hasPermission('system:dept:update')}>
+          <Button
+            type="link"
+            onClick={() => {
+              setRecordData(record);
+              setUpdateOpen(true);
+            }}
+          >
+            编辑
           </Button>
-        </Popconfirm>,
+        </Access>,
+        <Access key="delete" accessible={hasPermission('system:dept:delete')}>
+          <Popconfirm title="是否确认删除？" onConfirm={() => handleDelete(record.deptId)}>
+            <Button type="link" danger>
+              删除
+            </Button>
+          </Popconfirm>
+        </Access>,
       ],
     },
   ];
@@ -82,26 +104,31 @@ const Dept = () => {
         columns={columns}
         actionRef={actionRef}
         search={false}
-        request={async (params, sort, filter) => {
-          console.log(params, sort, filter);
+        expandable={{
+          expandedRowKeys,
+          onExpandedRowsChange: setExpandedRowKeys,
+        }}
+        request={async () => {
           const data = await treeDept();
+          handleExpandedRows(data);
           return {
             data: data,
           };
         }}
         toolbar={{
           actions: [
-            <Button
-              key="add"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setRecordData(null);
-                setUpdateOpen(true);
-              }}
-            >
-              新增
-            </Button>,
+            <Access key="add" accessible={hasPermission('system:dept:add')}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setRecordData(null);
+                  setUpdateOpen(true);
+                }}
+              >
+                新增
+              </Button>
+            </Access>,
           ],
         }}
       />

@@ -1,18 +1,23 @@
+import { isEmpty } from 'lodash-es';
 import { Tree, Button, Popconfirm } from 'antd';
-import { PlusOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import type { TreeProps, TreeDataNode } from 'antd';
-import { ProTable } from '@ant-design/pro-components';
+import { ProTable, TableDropdown } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { useRequest, useModel } from '@umijs/max';
-import { useEffect, useRef, useState } from 'react';
+import { useRequest, useModel, Access, useAccess } from '@umijs/max';
+import React, { useEffect, useRef, useState } from 'react';
+import { Logical } from '@/access';
+import { eachTree } from '@/utils/tree';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
 import ImportForm from './components/ImportForm';
-import { treeDept } from '@/apis/system/dept';
+import { selectableDept } from '@/apis/system/dept';
 import { listUser, deleteUser } from '@/apis/system/user';
 import type { SysUser } from '@/apis/types/system/user';
+import type { DeptTreeVo } from '@/apis/types/system/dept';
 
 const User = () => {
+  const { hasPermission } = useAccess();
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -30,12 +35,23 @@ const User = () => {
   /**
    * 部门树选择
    */
-  const { data: deptData } = useRequest(treeDept);
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [selectedDeptKeys, setSelectedDeptKeys] = useState<React.Key[]>([]);
   const onDeptSelect: TreeProps['onSelect'] = (selectedKeys) => {
     setSelectedDeptKeys(selectedKeys);
     actionRef.current?.reload();
   };
+  const { data: deptData } = useRequest(selectableDept, {
+    onSuccess(data) {
+      const keys: React.Key[] = [];
+      eachTree<DeptTreeVo>(data, (item) => {
+        if (!isEmpty(item.children)) {
+          keys.push(item.deptId);
+        }
+      });
+      setExpandedKeys(keys);
+    },
+  });
 
   /**
    * 删除用户
@@ -88,25 +104,37 @@ const User = () => {
       valueType: 'option',
       key: 'option',
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          onClick={() => {
-            setRecordData(record);
-            setUpdateOpen(true);
-          }}
-        >
-          修改
-        </Button>,
-        <Popconfirm
-          key="delete"
-          title="是否确认删除？"
-          onConfirm={() => handleDelete(record.userId)}
-        >
-          <Button type="link" danger>
-            删除
-          </Button>
-        </Popconfirm>,
+        <Access key="admin" accessible={record.userId !== 1}>
+          <Access key="update" accessible={hasPermission('system:user:update')}>
+            <Button
+              type="link"
+              onClick={() => {
+                setRecordData(record);
+                setUpdateOpen(true);
+              }}
+            >
+              编辑
+            </Button>
+          </Access>
+          <Access key="delete" accessible={hasPermission('system:user:delete')}>
+            <Popconfirm title="是否确认删除？" onConfirm={() => handleDelete(record.userId)}>
+              <Button type="link" danger>
+                删除
+              </Button>
+            </Popconfirm>
+          </Access>
+          <Access key="actions" accessible={hasPermission(['system:user:resetPwd'], Logical.OR)}>
+            <TableDropdown
+              menus={[
+                {
+                  key: 'resetPwd',
+                  name: '重置密码',
+                  disabled: !hasPermission('system:user:resetPwd'),
+                },
+              ].filter((item) => !item.disabled)}
+            />
+          </Access>
+        </Access>,
       ],
     },
   ];
@@ -116,10 +144,11 @@ const User = () => {
       <div className="flex h-full">
         <Tree
           className="w-[250px] pt-2 pb-2"
-          defaultExpandAll
           onSelect={onDeptSelect}
           treeData={deptData as unknown as TreeDataNode[]}
           fieldNames={{ key: 'deptId', title: 'deptName' }}
+          expandedKeys={expandedKeys}
+          onExpand={setExpandedKeys}
         />
         <ProTable
           className="flex-1 pl-4"
@@ -131,9 +160,13 @@ const User = () => {
           rowSelection={{
             selectedRowKeys,
             onChange: setSelectedRowKeys,
+            getCheckboxProps(record) {
+              return {
+                disabled: record.userId === 1,
+              };
+            },
           }}
-          request={async (params, sort, filter) => {
-            console.log(params, sort, filter);
+          request={async (params) => {
             const { items, meta } = await listUser({
               ...params,
               page: params.current,
@@ -147,41 +180,54 @@ const User = () => {
           }}
           toolbar={{
             actions: [
-              <Button
-                key="add"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setRecordData(null);
-                  setUpdateOpen(true);
-                }}
-              >
-                新增
-              </Button>,
-              <Popconfirm
-                key="delete"
-                title="是否确认删除？"
-                disabled={!selectedRowKeys.length}
-                onConfirm={() => handleDelete(selectedRowKeys.join(','))}
-              >
+              <Access key="add" accessible={hasPermission('system:user:add')}>
                 <Button
-                  icon={<DeleteOutlined />}
                   type="primary"
-                  danger
-                  disabled={!selectedRowKeys.length}
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setRecordData(null);
+                    setUpdateOpen(true);
+                  }}
                 >
-                  删除
+                  新增
                 </Button>
-              </Popconfirm>,
-              <Button
-                key="upload"
-                icon={<UploadOutlined />}
-                onClick={() => {
-                  setImportOpen(true);
-                }}
-              >
-                导入
-              </Button>,
+              </Access>,
+              <Access key="delete" accessible={hasPermission('system:user:delete')}>
+                <Popconfirm
+                  title="是否确认删除？"
+                  disabled={!selectedRowKeys.length}
+                  onConfirm={() => handleDelete(selectedRowKeys.join(','))}
+                >
+                  <Button
+                    icon={<DeleteOutlined />}
+                    type="primary"
+                    danger
+                    disabled={!selectedRowKeys.length}
+                  >
+                    删除
+                  </Button>
+                </Popconfirm>
+              </Access>,
+              <Access key="import" accessible={hasPermission('system:user:import')}>
+                <Button
+                  icon={<UploadOutlined />}
+                  onClick={() => {
+                    setImportOpen(true);
+                  }}
+                >
+                  导入
+                </Button>
+              </Access>,
+              <Access key="export" accessible={hasPermission('system:user:export')}>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={() => {
+                    setImportOpen(true);
+                  }}
+                >
+                  导出
+                </Button>
+              </Access>,
             ],
           }}
         />

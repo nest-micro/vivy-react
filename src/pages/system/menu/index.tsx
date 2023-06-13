@@ -1,14 +1,18 @@
+import { isEmpty } from 'lodash-es';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
+import { Access, useAccess } from '@umijs/max';
+import { eachTree } from '@/utils/tree';
 import { DictTag } from '@/components/Dict';
 import UpdateForm from './components/UpdateForm';
 import { treeMenu, deleteMenu } from '@/apis/system/menu';
 import type { MenuTreeVo } from '@/apis/types/system/menu';
 
 const Menu = () => {
+  const { hasPermission } = useAccess();
   const actionRef = useRef<ActionType>();
   const [updateOpen, setUpdateOpen] = useState(false);
   const [recordData, setRecordData] = useState<Nullable<MenuTreeVo>>(null);
@@ -62,25 +66,24 @@ const Menu = () => {
       valueType: 'option',
       key: 'option',
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          onClick={() => {
-            setRecordData(record);
-            setUpdateOpen(true);
-          }}
-        >
-          修改
-        </Button>,
-        <Popconfirm
-          key="delete"
-          title="是否确认删除？"
-          onConfirm={() => handleDelete(record.menuId)}
-        >
-          <Button type="link" danger>
-            删除
+        <Access key="update" accessible={hasPermission('system:menu:update')}>
+          <Button
+            type="link"
+            onClick={() => {
+              setRecordData(record);
+              setUpdateOpen(true);
+            }}
+          >
+            编辑
           </Button>
-        </Popconfirm>,
+        </Access>,
+        <Access key="delete" accessible={hasPermission('system:menu:delete')}>
+          <Popconfirm title="是否确认删除？" onConfirm={() => handleDelete(record.menuId)}>
+            <Button type="link" danger>
+              删除
+            </Button>
+          </Popconfirm>
+        </Access>,
       ],
     },
   ];
@@ -94,26 +97,29 @@ const Menu = () => {
         search={false}
         columns={columns}
         actionRef={actionRef}
-        request={async (params, sort, filter) => {
-          console.log(params, sort, filter);
+        request={async () => {
           const data = await treeMenu();
+          eachTree<MenuTreeVo>(data, (item) => {
+            if (isEmpty(item.children)) item.children = undefined;
+          });
           return {
             data: data,
           };
         }}
         toolbar={{
           actions: [
-            <Button
-              key="add"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setRecordData(null);
-                setUpdateOpen(true);
-              }}
-            >
-              新增
-            </Button>,
+            <Access key="add" accessible={hasPermission('system:menu:add')}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setRecordData(null);
+                  setUpdateOpen(true);
+                }}
+              >
+                新增
+              </Button>
+            </Access>,
           ],
         }}
       />

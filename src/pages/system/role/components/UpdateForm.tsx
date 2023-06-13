@@ -11,7 +11,7 @@ import {
 import { TreeSelect } from 'antd';
 import { useRef, useEffect } from 'react';
 import { useModel } from '@umijs/max';
-import { treeMenu } from '@/apis/system/menu';
+import { selectableMenu } from '@/apis/system/menu';
 import { addRole, updateRole, infoRole } from '@/apis/system/role';
 import type { SysRole } from '@/apis/types/system/role';
 
@@ -30,7 +30,10 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
     formRef.current?.resetFields();
     if (record) {
       infoRole(record.roleId).then((info) => {
-        formRef.current?.setFieldsValue(info);
+        formRef.current?.setFieldsValue({
+          ...info,
+          menuIds: info.menuIds.map((value) => ({ value })),
+        });
       });
     }
   }, [record]);
@@ -44,9 +47,13 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       await updateRole({
         ...values,
         roleId: record.roleId,
+        menuIds: values.menuIds.map((item: any) => item.value),
       });
     } else {
-      await addRole(values);
+      await addRole({
+        ...values,
+        menuIds: values.menuIds.map((item: any) => item.value),
+      });
     }
     formRef.current?.resetFields();
   };
@@ -57,7 +64,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       layout="horizontal"
       labelCol={{ flex: '100px' }}
       formRef={formRef}
-      title={record ? `更新角色-${record.roleName}` : `新增角色`}
+      title={record ? `编辑角色-${record.roleName}` : `新增角色`}
       onFinish={async (values) => {
         await handleSubmit(values);
         props.onFinish?.(values);
@@ -76,7 +83,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       <ProFormTreeSelect
         name="menuIds"
         label="菜单权限"
-        request={treeMenu}
+        request={selectableMenu}
         fieldProps={{
           fieldNames: { label: 'menuName', value: 'menuId' },
           maxTagCount: 3,

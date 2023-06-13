@@ -34,6 +34,12 @@ const SUPER_ROLE_PERMISSION = '*:*:*';
  * @doc https://umijs.org/docs/max/access
  */
 export default ({ roles = [], permissions = [] }: InitialState) => {
+  /**
+   * 校验是否包含角色
+   * @param value 需要校验的角色标识
+   * @param logical 验证逻辑：AND | OR，默认AND
+   * @returns true / false
+   */
   const hasRole = (value: AccessRole | AccessRole[], logical: Logical = Logical.AND) => {
     if (roles.includes(SUPER_ROLE_CODE)) {
       return true;
@@ -48,6 +54,12 @@ export default ({ roles = [], permissions = [] }: InitialState) => {
     }
   };
 
+  /**
+   * 校验是否包含权限吗
+   * @param value 需要校验的权限码
+   * @param logical 验证逻辑：AND | OR，默认AND
+   * @returns true / false
+   */
   const hasPermission = (
     value: AccessPermission | AccessPermission[],
     logical: Logical = Logical.AND,

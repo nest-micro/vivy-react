@@ -55,7 +55,7 @@ const UpdateForm: React.FC<UpdateFormProps> = ({ record, ...props }) => {
       layout="horizontal"
       labelCol={{ flex: '100px' }}
       formRef={formRef}
-      title={record ? `更新部门-${record.deptName}` : `新增部门`}
+      title={record ? `编辑部门-${record.deptName}` : `新增部门`}
       onFinish={async (values) => {
         await handleSubmit(values);
         props.onFinish?.(values);
